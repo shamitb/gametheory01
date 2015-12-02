@@ -1,5 +1,7 @@
 Possible to restrict number of actions to N? By choosing from the actions {"stay", "flip action 1", "flip action 2", ..., "flip action N-1"}.
 
+Run simulation in continuous time to avoid simultaneous changes of action. Randomly select one player at a time and evaluate that player's strategy to determine new adjacency matrix. Utility can then be either updated instantaneously at each "step" or leaky-integrated over time. Imitation dynamics can be included so that evolutionary time (slow) and game time (fast) occur together, without predetermined number of rounds.
+
 
 
 
