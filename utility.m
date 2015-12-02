@@ -16,6 +16,6 @@ function score = utility(A, pL, beta, cost)
         cost = 1;
     end
     
-    score = sum(beta.^pL)' - cost * sum(A, 2);
+    score = sum(beta.^pL.*(pL~=0))' - cost * sum(A, 2);
 
 end
