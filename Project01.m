@@ -2,7 +2,7 @@
 close all;
 % Follower's Game
 
-NUM_PLAYERS = 5;
+NUM_PLAYERS = 10;
 A = randi([0 1], NUM_PLAYERS, NUM_PLAYERS);
 A = A.*(eye(NUM_PLAYERS)==0);
 score = zeros(NUM_PLAYERS,1);
@@ -18,5 +18,8 @@ for i = 1 : NUM_ITER
     score = utility(A, pL, beta, cost);
 end
 
+A
+score
 
-%plot(digraph(A))
+
+plot(digraph(A))
