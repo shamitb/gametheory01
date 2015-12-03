@@ -19,7 +19,7 @@ Greedy strategy:
 "Democratic" strategy:
 	Some sort of maximizing the score of my audience - choice of strategy is based on the audience/followers
 	
-"Imitate strategy" Players change their strategy by imitating the majority, with a rule that depends on the strategies with which they have interacted (follower or followed) - emphasizes the importance of network effect (social behaviour)
+"Imitate strategy" Players change their strategy by imitating the majority, with a rule that depends on the strategies with which they have interacted (follower or followed) - emphasizes the importance of network effect (social behaviour) and learning as a side-effect
 
 ??? Neural networks ???
 Taking the audience distribution as input and the output nodes of the network would determine the probability of connecting to someone in the specific audiences.
