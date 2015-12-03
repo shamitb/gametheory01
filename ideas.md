@@ -17,7 +17,7 @@ Greedy strategy:
 	Always goes for the immediate Nash equilibrium! (Maximizes own score)
 
 "Democratic" strategy:
-	Some sort of maximizing the score of my audience - choice of startegy is based on the audience
+	Some sort of maximizing the score of my audience - choice of strategy is based on the audience/followers
 
 ??? Neural networks ???
 Taking the audience distribution as input and the output nodes of the network would determine the probability of connecting to someone in the specific audiences.
