@@ -2,7 +2,8 @@
 ALGO:
 
 1. Current utility matrix - randomly choose individual i
-2. Make a random connection 
+2. Make a random connection
+
   2a. If adjacency matrix for ith row has 0 entry for any column set it to 1  
   2b. Keep track of the column number in a vector
 3. Recalculate utilities save in a vector (cell array ?) of utilities
