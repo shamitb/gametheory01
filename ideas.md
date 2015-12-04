@@ -16,7 +16,9 @@ ALGO:
 
 Possible to restrict number of actions to N? By choosing from the actions {"stay", "flip action 1", "flip action 2", ..., "flip action N-1"}.
 
-Run simulation in continuous time to avoid simultaneous changes of action. Randomly select one player at a time and evaluate that player's strategy to determine new adjacency matrix. Utility can then be either updated instantaneously at each "step" or leaky-integrated over time. Imitation dynamics can be included so that evolutionary time (slow) and game time (fast) occur together, without predetermined number of rounds.
+Run simulation in continuous time to avoid simultaneous changes of action. Randomly select one player at a time and evaluate that player's strategy to determine new adjacency matrix. Utility can then be either updated instantaneously at each "step" or leaky-integrated over time. Imitation dynamics can be included so that evolutionary time (slow) and game time (fast) occur together, without predetermined number of rounds.  
+
+With only one action at a time, we can efficiently store the game history by saving an initial state (if necessary) and a list of actions. The adjacency matrix at any point in history can then be reconstructed quickly with the accumarray command. Similar methods should work with the least-path matrix, population strategy, etc., so that only changes are recorded and reconstructed as needed for analysis.
 
 
 
