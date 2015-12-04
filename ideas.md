@@ -9,6 +9,8 @@ ALGO:
 3. Recalculate utilities save in a vector (cell array ?) of utilities
 4. Goto 2. until max number of tries exhausted
 5. Choose among all the above options in step 2b. based on utilities obtained i.e. among those in step 3. ...
+
+  5 a. Choose based on the strategies below
  
 ------------------------------------------------------------------------------------------
 
