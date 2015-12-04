@@ -2,9 +2,9 @@
 ALGO:
 
 0. Current utility matrix
-1. Make a random connection
+1. Make a new connection
 2. Recalculate utilities
-3. Goto 1 until max number of tries exhausted
+3. Goto 1. until max number of tries exhausted
 4. Choose among all above options in step 2. based on utilities obtained ...
  
 ------------------------------------------------------------------------------------------
