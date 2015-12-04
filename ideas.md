@@ -1,7 +1,7 @@
 
 ALGO:
 
-0. urrent utility matrix
+0. Current utility matrix
 1. Make a random connection
 2. Recalculate utilities
 3. Goto 1 until max number of tries exhausted
