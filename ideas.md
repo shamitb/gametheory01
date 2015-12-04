@@ -1,11 +1,13 @@
 
 ALGO:
 
-0. Current utility matrix
-1. Make a new connection
-2. Recalculate utilities
-3. Goto 1. until max number of tries exhausted
-4. Choose among all above options in step 2. based on utilities obtained ...
+1. Current utility matrix - randomly choose individual i
+2. Make a random connection 
+2a. If adjacency matrix for ith row has 0 entry for any column set it to 1  
+2b. Keep track of the column number in a vector
+3. Recalculate utilities save in a vector (cell array ?) of utilities
+4. Goto 1 until max number of tries exhausted
+5. Choose among all the above options in step 2b. based on utilities obtained (i.e. among those in step 3. ...
  
 ------------------------------------------------------------------------------------------
 
