@@ -96,6 +96,9 @@ function [S, A, U, SHistory, AHistory, UHistory]...
                 % TODO: do strategy
                 display('Action')
                 
+                % Common strategy function interface
+                doStrategy(agent, S, A, U,1,1);
+                
             % imitate?
             else
                 
@@ -112,3 +115,6 @@ function [S, A, U, SHistory, AHistory, UHistory]...
         end % while loop                
     end % if valid strategy
 end
+
+
+
