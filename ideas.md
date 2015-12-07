@@ -23,21 +23,28 @@ With only one action at a time, we can efficiently store the game history by sav
 
 
 
-*** Strategies ***
+### Strategies
 
-Altruistic strategy:
-	Maximizes the total score for everyone
+#### Greedy:
+Maximizes own score. Always cut non-looping follows first in random order. If $\beta<\mathrm{cost}$, keep shortest loop if $k<\log\mathrm{cost}/\log\beta$. If $\beta =$ cost, keep last remaining loop. If $\beta>\mathrm{cost}$, keep longest loop.
 
-"Fair" strategy:
-	If I have more score than the average, then I try to be altruistic, otherwise I'm selfish.
+#### Altruistic:
+Maximizes total score of all players. *Possible heuristic* Always add connection to node with highest path length that agent is not already audience to. Remove redundant connections according to $\beta\neq\mathrm{cost}$ cases.
 
-Greedy strategy:
-	Always goes for the immediate Nash equilibrium! (Maximizes own score)
+#### "Fair":
+Greedy if utility is below mean, altruistic if above.
 
-"Democratic" strategy:
-	Some sort of maximizing the score of my audience - choice of strategy is based on the audience/followers
+#### Team player:
+Maximizes total score of own audience. *Possible heuristic* Always add connection to node with highest path length in own audience. Remove redundant connections.
 	
-"Imitate strategy" Players change their strategy by imitating the majority, with a rule that depends on the strategies with which they have interacted (follower or followed) - emphasizes the importance of network effect (social behaviour) and learning as a side-effect
+#### Copycat:
+Player uses current best strategy. Players change their strategy by imitating the majority, with a rule that depends on the strategies with which they have interacted (follower or followed) - emphasizes the importance of network effect (social behaviour) and learning as a side-effect
 
-??? Neural networks ???
-Taking the audience distribution as input and the output nodes of the network would determine the probability of connecting to someone in the specific audiences.
+#### Partition:
+Player uses the path length and connection information to partition the possible actions, and chooses action from a probability distribution on the partition.
+
+#### Neural network:
+Like partition player, but uses partition as input to a neural network and probability distribution as output.
+
+#### Partition history:
+Player uses current and historical path length and connection information.
