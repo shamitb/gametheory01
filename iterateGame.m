@@ -99,7 +99,7 @@ function [S, A, U, SHistory, AHistory, UHistory]...
                 display('Action')
                 
                 % Common strategy function interface
-                doStrategy(agent, S, A, U,1,1);
+                [indexMaxUtil A U] = doStrategy(agent, S, A, U,1,1);
                 
             % imitate?
             else
