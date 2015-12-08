@@ -12,7 +12,7 @@ function handle = generateStrategyGreedy(beta, cost)
         if any(kill)
             connection = kill(randi(numel(kill)));
         else
-            kill = find(A(agent, :));
+            kill = A(agent, :);
             switch sum(kill)
                 case 0
                     connection = agent;
@@ -22,14 +22,11 @@ function handle = generateStrategyGreedy(beta, cost)
                     else
                         connection = agent;
                     end
-                case 2
-                    if beta ^ (pL(kill(1), agent) + rand - 0.5) < beta ^ (pl(kill(2), agent))
-                        connection = kill(1);
-                    else
-                        connection = kill(2);
-                    end
                 otherwise
-                    connection = kill(randi(numel(kill)));                    
+                    kill = find(kill);
+                    score = (pl(agent, agent) - 1 == pl(kill, agent)) + rand(size(kill));
+                    [~, i] = min(score);
+                    connection = kill(i);
             end
         end
         
