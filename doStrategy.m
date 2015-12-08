@@ -12,13 +12,13 @@ function [indexMaxUtil A U]...
     U1 = U;
     for i = 1 : col
         Atemp = A;
-        Atemp(iPlayer, i) = 1;
+        Atemp(iPlayer, i) = 0;
         pL = pathLength(Atemp);
         U1 = utility(Atemp, pL, beta, cost);
         utilitySet = [utilitySet U1(iPlayer)];
     end
     [M, indexMaxUtil] = max(utilitySet);
-    A(iPlayer, indexMaxUtil) = 1;
+    A(iPlayer, indexMaxUtil) = 0;
     pL = pathLength(A);
     U = utility(A, pL, beta, cost);
 end
