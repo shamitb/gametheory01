@@ -14,8 +14,9 @@ function [S, A, U, SHistory, AHistory, UHistory]...
 % AHistory - struct list of actions (agent, connection, time)
 % UHistory - struct list of utilities (agent, utility, time)
 
-    % if no strategies given return empty results
     if ~exist('S','var') || isempty(S)
+    %% if no strategies given return empty results
+
         S = [];
         A = [];
         U = [];
@@ -23,9 +24,8 @@ function [S, A, U, SHistory, AHistory, UHistory]...
         AHistory = struct('agent', {}, 'connection', {}, 'time', {});
         UHistory = struct('agent', {}, 'utility', {}, 'time', {});
         
-    % otherwise do function
     else
-        
+    %% validate inputs
         N = length(S);
         
         % validate A, default = zeros(N)
@@ -55,6 +55,8 @@ function [S, A, U, SHistory, AHistory, UHistory]...
             imitationEpoch = N;
         end
         
+    %% initialize variables
+        
         actionIndex = 0;
         imitationIndex = 0;
         
@@ -79,14 +81,14 @@ function [S, A, U, SHistory, AHistory, UHistory]...
         untilAction = -log(rand);
         untilImitate = -log(rand) * imitationEpoch;
         
+    %% main loop        
         while actionCount > actionIndex
             
             % select random agent
             agent = randi(N);
             
-            % act?
             if untilAction < untilImitate
-                
+        %% action
                 % advance time
                 untilImitate = untilImitate - untilAction;
                 t = t + untilAction;
@@ -101,6 +103,7 @@ function [S, A, U, SHistory, AHistory, UHistory]...
                 
             % imitate?
             else
+        %% imitation
                 
                 % advance time
                 untilAction = untilAction - untilImitate;
