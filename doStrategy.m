@@ -1,13 +1,15 @@
-function [indexMaxUtil]...
+function [indexMaxUtil A U]...
     = doStrategy(iPlayer, S, A, U, beta, cost)
-    indexMaxUtil = doStrategyCheckAll(iPlayer, S, A, U, beta, cost)
+    [indexMaxUtil A U] = doStrategyCheckAll(iPlayer, S, A, U, beta, cost)
 end
 
-function [indexMaxUtil]...
+function [indexMaxUtil A U]...
     = doStrategyCheckAll(iPlayer, S, A, U, beta, cost)
 
     [row col] = size(A);
     utilitySet = [];
+    Atemp = A;
+    U1 = U;
     for i = 1 : col
         Atemp = A;
         Atemp(iPlayer, i) = 1;
@@ -16,4 +18,7 @@ function [indexMaxUtil]...
         utilitySet = [utilitySet U1(iPlayer)];
     end
     [M, indexMaxUtil] = max(utilitySet);
+    A(iPlayer, indexMaxUtil) = 1;
+    pL = pathLength(A);
+    U = utility(A, pL, beta, cost);
 end
