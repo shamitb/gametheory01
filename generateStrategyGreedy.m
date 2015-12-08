@@ -24,7 +24,7 @@ function handle = generateStrategyGreedy(beta, cost)
                     end
                 otherwise
                     kill = find(kill);
-                    score = (pl(agent, agent) - 1 == pl(kill, agent)) + rand(size(kill));
+                    score = (pL(agent, agent) - 1 == pL(kill, agent)) + rand(size(kill))';
                     [~, i] = min(score);
                     connection = kill(i);
             end
