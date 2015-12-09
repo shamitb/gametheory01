@@ -18,7 +18,7 @@ function handle = generateStrategyGreedy(beta, cost)
                     connection = agent;
                 case 1
                     if (cost > beta ^ pL(agent, agent))
-                        connection = kill;
+                        connection = find(kill);
                     else
                         connection = agent;
                     end
