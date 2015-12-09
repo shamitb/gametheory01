@@ -1,6 +1,6 @@
 function [S, A, U, SHistory, AHistory, UHistory]...
-    = iterateGame(S, A, pL, U, actionCount, imitationEpoch)
-% [S, A, U, SHistory, AHistory, UHistory] = iterateGame(S, A, pL, U,
+    = iterateGame(S, A, pL, U, actionCount, imitationEpoch, strategy)
+% [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U,
 % actionCount, imitationEpoch)
 % 
 % S - Nx1 vector of agent strategies (required!)
@@ -11,10 +11,9 @@ function [S, A, U, SHistory, AHistory, UHistory]...
 % imitationEpoch - average time between imitations or false (default = N)
 %
 % SHistory - struct list of strategy changes, (agent, strategy, time)
-% AHistory - struct list of actions (agent, connection, time)
-% UHistory - struct list of utilities (agent, utility, time)
+% AHistory - struct list of actions (agent, connection, utility, time)
 
-    if ~exist('S','var') || isempty(S)
+    if ~exist('S','var') || isempty(S) || ~exist('strategy', 'var') || isempty(strategy)
     %% if no strategies given return empty results
 
         S = [];
@@ -70,11 +69,9 @@ function [S, A, U, SHistory, AHistory, UHistory]...
             SHistory = struct('agent', {}, 'strategy', {}, 'time', {});            
         end
         
-        % preallocate action and utility histories
+        % preallocate action history
         AHistory(actionCount) =...
-            struct('agent', [], 'connection', [], 'time', []);
-        UHistory(actionCount) =...
-            struct('agent', [], 'utility', [], 'time', []);
+            struct('agent', [], 'connection', [], 'utility', [], 'time', []);
         
         % start poisson process
         t = 0;
@@ -95,11 +92,37 @@ function [S, A, U, SHistory, AHistory, UHistory]...
                 untilAction = -log(rand);
                 actionIndex = actionIndex + 1;
                 
-                % TODO: do strategy
-                display('Action')
+                % Apply agent's strategy
+                [connection, newA, newpL, newU] = strategy{S(agent)}(agent, A, pL, U);
                 
-                % Common strategy function interface
-                [indexMaxUtil A U] = doStrategy(agent, S, A, U,1,1);
+                if connection ~= agent
+                    
+                    % Update A
+                    A(agent, connection) = 1 - A(agent, connection);
+                    
+                    % Compute pL if needed
+                    if isempty(newpL)
+                        pL = pathLength(A);
+                    else
+                        pL = newpL;
+                    end
+                    
+                    % Compute U if needed
+                    if isempty(newU)
+                        U = utility(A, pL);
+                    else
+                        U = newU;
+                    end
+                    
+                    % Record utility in history
+                    AHistory(actionIndex).utility = U;
+                    
+                end
+                
+                % Record action in history
+                AHistory(actionIndex).agent = agent;
+                AHistory(actionIndex).connection = connection;
+                AHistory(actionIndex).time = t;
                 
             % imitate?
             else
