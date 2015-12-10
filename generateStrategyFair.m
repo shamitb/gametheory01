@@ -10,15 +10,11 @@ handle = @strategyFair;
         beta = 1, cost = 1;
         meanUtil = mean(U);
         if U(agent) < meanUtil
-            greedy(agent, A, pL, U);
+            [connection, newA, newpL, newU] = greedy(agent, A, pL, U);
         else
-            altruistic(agent, A, pL, U);
+            [connection, newA, newpL, newU] = altruistic(agent, A, pL, U);
         end
-        
-        newA = [];
-        newpL = [];
-        newU = [];
-        
+       
     end
 
 end
