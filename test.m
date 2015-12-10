@@ -9,10 +9,11 @@ cost = 0.5;
 pL = pathLength(A);
 U = utility(A, pL, beta, cost);
 
-strategy = {...
-    @strategyRandom,...
-    generateStrategyGreedy(beta, cost),...
-    generateStrategyAltruist(beta, cost)};
+strategy{1} = @strategyRandom;
+strategy{2} = generateStrategyGreedy(beta, cost);
+strategy{3} = generateStrategyAltruist(beta, cost);
+% strategy{4} = generateStrategyFair(strategy{2}, strategy{3});
+
 
 S = 3 * ones(N, 1);
 % S(1:10) = 2;
