@@ -12,16 +12,16 @@ U = utility(A, pL, beta, cost);
 strategy{1} = @strategyRandom;
 strategy{2} = generateStrategyGreedy(beta, cost);
 strategy{3} = generateStrategyAltruist(beta, cost);
-% strategy{4} = generateStrategyFair(strategy{2}, strategy{3});
+strategy{4} = generateStrategyFair(strategy{2}, strategy{3});
 
-
-S = 3 * ones(N, 1);
+S = 4 * ones(N, 1);
 % S(1:10) = 2;
 
-[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 10000, false, strategy);
+[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 100, false, strategy);
 
 heat = accumarray([AHistory(:).agent; AHistory(:).connection]', 1, [N N]);
 util = sort([AHistory(:).utility]);
+
 %{
 Gheat = digraph(heat);
 GA = digraph(A);

@@ -1,6 +1,6 @@
-function handle = generateStrategyFair(beta, cost)
+function handle = generateStrategyFair(greedy, altruistic)
 
-    handle = @strategyFair;
+handle = @strategyFair;
 
     function [connection, newA, newpL, newU] = strategyFair(agent, A, pL, U)
         % if any unlooped connections, remove one
@@ -8,12 +8,17 @@ function handle = generateStrategyFair(beta, cost)
         % else if loop gives no advantage, remove
         
         beta = 1, cost = 1;
-        generateStrategyGreedy(beta, cost);
+        meanUtil = mean(U);
+        if U(agent) < meanUtil
+            greedy(agent, A, pL, U);
+        else
+            altruistic(agent, A, pL, U);
+        end
         
         newA = [];
         newpL = [];
         newU = [];
-
+        
     end
-    
+
 end
