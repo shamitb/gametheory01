@@ -1,7 +1,7 @@
 close all;
 
 N = 50;
-A = initialAction(N, 0);
+A = initialAction(N, 0.25);
 
 beta = 1;
 cost = 0.5;
@@ -15,7 +15,7 @@ strategy = {...
     generateStrategyAltruist(beta, cost)};
 
 S = 3 * ones(N, 1);
-S(1:10) = 2;
+% S(1:10) = 2;
 
 [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 10000, false, strategy);
 
