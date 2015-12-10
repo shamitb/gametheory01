@@ -12,7 +12,7 @@ U = utility(A, pL, beta, cost);
 strategy{1} = @strategyRandom;
 strategy{2} = generateStrategyGreedy(beta, cost);
 strategy{3} = generateStrategyAltruist(beta, cost);
-strategy{4} = generateStrategyFair(strategy{2}, strategy{3});
+strategy{4} = generateStrategyFair(beta, cost, strategy{2}, strategy{3});
 
 S = 4 * ones(N, 1);
 % S(1:10) = 2;
