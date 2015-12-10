@@ -1,9 +1,9 @@
 close all;
 
-N = 100;
-A = initialAction(N, 1/N);
+N = 20;
+A = initialAction(N, 2/N);
 
-beta = 1;
+beta = 0.999;
 cost = 1;
 
 pL = pathLength(A);
@@ -15,9 +15,10 @@ strategy = {...
     generateStrategyGreedy(beta, cost),...
     generateStrategyAltruist(beta, cost)};
 
-S = [ones(N/2,1)*3;ones(N/2,1)*2];
+S = 3 * ones(N, 1);
+S(1) = 2;
 
-[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 100, false, strategy);
+[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 2000, false, strategy);
 mean(U)
 
 heat = accumarray([AHistory(:).agent; AHistory(:).connection]', 1, [N N]);
