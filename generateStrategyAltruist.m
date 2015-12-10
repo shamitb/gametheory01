@@ -4,41 +4,68 @@ function handle = generateStrategyAltruist(beta, cost)
 
     function [connection, newA, newpL, newU] = strategyAltruist(agent, A, pL, U)
     % Benefit all players
-    % Does not compute result
+
         N = numel(U);
+        
+        % original "costless" utility
+        % base(i, j) = i's contribution to j's utility
         base = beta.^pL.*(pL~=0);
         
+        % - check = find(~A(agent, :));
+        % - agentInCheck = find(check == agent);
+        
+        % estimate new pathlength from agent through connection
         pL(pL==0) = inf;
         pathOut = pL + 1;
+        % - pathOut = pL(:, check) + 1
         pathOut = bsxfun(@min, pathOut, pL(agent,:));
         self = pathOut(agent, agent);
+        % - self = pathOut(agent, agentInCheck);
         pathOut(1:N+1:end)=1;
         pathOut(agent, agent) = self;
+        % - pathOut(agent, agentInCheck) = self;
         pathOut(pathOut==inf)=0;
+        
+        % improvement from path out
         helpOut = bsxfun(...
             @minus, beta.^pathOut.*(pathOut~=0), base(agent,:));
+        % - helpOut = bsxfun(...
+        % - @minus, beta.^pathOut.*(pathOut~=0), base(agent, check));
         
+        % estimate new pathlength through agent to connection
         pathIn = pL(:, agent) + 1;
+        % - pathIn = pL(check, agent) + 1;
         pathIn = bsxfun(@min, pathIn, pL);
+        % - pathIn = bsxfun(@min, pathIn, pL(check, :));
         pathIn(agent, :) = 1;
+        % - pathIn(agentInCheck, :) = 1;
         pathIn(:, agent) = pL(:, agent);
+        % - pathIn(:, agent) = pL(check, agent);
         pathIn(pathIn==inf) = 0;
-        helpIn = beta.^pathIn.*(pathIn~=0) - base;
-        
-        deltaU = sum(helpOut, 2) + sum(helpIn)' - helpIn(agent, :)' - cost;
-
-        best = max(deltaU);
         pL(pL==inf) = 0;
+        
+        % improvement from path in
+        helpIn = beta.^pathIn.*(pathIn~=0) - base;
+        % - helpIn = beta.^pathIn.*(pathIN~=0) - base(check, :);
+        
+        % total improvement
+        deltaU = sum(helpOut, 2) + sum(helpIn)' - helpIn(agent, :)';
+        % - deltaU = sum(helpOut, 2) + sum(helpIn)' - helpIn(agentInCheck, :)';
+        
 
+        % take best result, randomize if more than one
+        best = max(deltaU);
         connection = find(deltaU==best);
+        % - connection = check(find(deltaU==best));
         connection = connection(randi(numel(connection)));
         
+        % compute new move
         checkA = A;
         checkA(agent, connection) = 1 - checkA(agent, connection);
         checkpL = pathLength(checkA);
         checkU = utility(checkA, checkpL);
         
-        % never make negative move
+        % use only if better than original
         if sum(checkU) < sum(U)
             connection = agent;
             newA = A;
@@ -63,7 +90,7 @@ function handle = generateStrategyAltruist(beta, cost)
             end
             lengths = lengths(:, 2:end);
             lengths = lengths + 1e-8 * rand(size(lengths));
-            score = lengths * 0.5.^(1:l-1)';
+            score = lengths * beta.^(1:l-1)';
             [~, i] = max(score);
                 
             checkA = A;

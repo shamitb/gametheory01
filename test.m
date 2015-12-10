@@ -1,14 +1,13 @@
 close all;
 
-N = 20;
-%A = initialAction(N, 0.5);
+N = 50;
+A = initialAction(N, 0);
 
-beta = 0.9;
-cost = 1;
+beta = 1;
+cost = 0.5;
 
 pL = pathLength(A);
 U = utility(A, pL, beta, cost);
-mean(U)
 
 strategy = {...
     @strategyRandom,...
@@ -16,10 +15,9 @@ strategy = {...
     generateStrategyAltruist(beta, cost)};
 
 S = 3 * ones(N, 1);
-S(1) = 2;
+S(1:10) = 2;
 
-[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 100, false, strategy);
-mean(U)
+[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 10000, false, strategy);
 
 heat = accumarray([AHistory(:).agent; AHistory(:).connection]', 1, [N N]);
 util = sort([AHistory(:).utility]);
