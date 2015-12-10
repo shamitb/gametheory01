@@ -1,9 +1,9 @@
 close all;
 
 N = 20;
-A = initialAction(N, 2/N);
+%A = initialAction(N, 0.5);
 
-beta = 0.999;
+beta = 0.9;
 cost = 1;
 
 pL = pathLength(A);
@@ -18,7 +18,7 @@ strategy = {...
 S = 3 * ones(N, 1);
 S(1) = 2;
 
-[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 2000, false, strategy);
+[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 100, false, strategy);
 mean(U)
 
 heat = accumarray([AHistory(:).agent; AHistory(:).connection]', 1, [N N]);

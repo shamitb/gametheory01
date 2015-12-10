@@ -29,51 +29,53 @@ function handle = generateStrategyAltruist(beta, cost)
 
         best = max(deltaU);
         pL(pL==inf) = 0;
+
+        connection = find(deltaU==best);
+        connection = connection(randi(numel(connection)));
+        
+        checkA = A;
+        checkA(agent, connection) = 1 - checkA(agent, connection);
+        checkpL = pathLength(checkA);
+        checkU = utility(checkA, checkpL);
         
         % never make negative move
-        if best < 0
+        if sum(checkU) < sum(U)
             connection = agent;
             newA = A;
             newpL = pL;
             newU = U;
-            bestU = sum(U);
         else
-            connection = find(deltaU==best);
-            connection = connection(randi(numel(connection)));
-            newA = A;
-            newA(agent, connection) = 1;
-            newpL = pathLength(newA);
-            newU = utility(newA, newpL);
-            bestU = sum(newU);
+            newA = checkA;
+            newpL = checkpL;
+            newU = checkU;
         end
 
-        % if benefit is small, check for redundancies
-        if bestU - sum(U) < cost
-            check = find(A(agent, :));
-            if ~isempty(check)
+        % check for redundancies
+        check = find(A(agent, :));
+        if ~isempty(check)
+% heuristic                
+            m = numel(check);
+            l = max(pL(:)) + 1;
+            lengths = zeros(m, l);
+            core = pL(check, check) + 1;
+            for i = 1:m
+                lengths(i, :) = accumarray(core(:,i), 1, [l, 1])';
+            end
+            lengths = lengths(:, 2:end);
+            lengths = lengths + 1e-8 * rand(size(lengths));
+            score = lengths * 0.5.^(1:l-1)';
+            [~, i] = max(score);
                 
-                m = numel(check);
-                l = max(pL(:)) + 1;
-                lengths = zeros(m, l);
-                core = pL(check, check) + 1;
-                for i = 1:m
-                    lengths(i, :) = accumarray(core(:,i), 1, [l, 1])';
-                end
-                lengths = lengths(:, 2:end);
-                lengths = lengths + 1e-8 * rand(size(lengths));
-                score = lengths * beta.^(1:l-1)';
-                [~, i] = max(score);
-                
-                checkA = A;
-                checkA(agent, check(i)) = 0;
-                checkpL = pathLength(checkA);
-                checkU = utility(checkA, checkpL);
-                if mean(checkU) > mean(newU)
-                    connection = check(i);
-                    newA = checkA;
-                    newpL = checkpL;
-                    newU = checkU;
-                end
+            checkA = A;
+            checkA(agent, check(i)) = 0;
+            checkpL = pathLength(checkA);
+            checkU = utility(checkA, checkpL);
+            if mean(checkU) > mean(newU)
+                connection = check(i);
+                newA = checkA;
+                newpL = checkpL;
+                newU = checkU;
+            end
                 
 % brute force :( works but ugh
 %{
@@ -90,7 +92,6 @@ function handle = generateStrategyAltruist(beta, cost)
                     end
                 end
 %}
-            end
         end
         
     end
