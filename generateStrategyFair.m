@@ -1,4 +1,4 @@
-function handle = generateStrategyFair(beta, cost, greedy, altruistic)
+function handle = generateStrategyFair(greedy, altruistic)
 
 handle = @strategyFair;
 
