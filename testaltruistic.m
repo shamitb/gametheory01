@@ -12,7 +12,7 @@ for i= 1:maxTrials
     A = initialAction(N, 4/N);
     
     beta = 1;
-    cost = 0.5;
+    cost = 0.5; 
 
     pL = pathLength(A);
     U = utility(A, pL, beta, cost);

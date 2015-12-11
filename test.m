@@ -1,3 +1,5 @@
+function test()
+
 close all;
 
 N = 50;
@@ -34,3 +36,6 @@ X = p.XData; Y = p.YData;
 plot(GA, 'nodecdata', S, 'xdata', X, 'ydata', Y);
 
 %}
+
+end
+
