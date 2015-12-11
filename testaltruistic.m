@@ -2,7 +2,7 @@ function testaltruistic()
 
 clear all;
 
-N = 10;
+N = 20;
     
 maxTrials = 30;
 Ucummulative = zeros(1, N);
