@@ -144,7 +144,7 @@ function [S, A, U, SHistory, AHistory]...
                 imitationIndex = imitationIndex + 1;
                 
                 % utility-weighted selection of new strategy
-                w = cumsum(U);
+                w = cumsum(U) - min(U);
                 rolemodel = sum(w < rand * w(end)) + 1;
                 S(agent) = S(rolemodel);
                 SHistory(imitationIndex).agent = agent;
