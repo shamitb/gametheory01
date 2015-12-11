@@ -1,5 +1,5 @@
 function [S, A, U, SHistory, AHistory]...
-    = iterateGame(S, A, pL, U, actionCount, imitationEpoch, strategy)
+    = iterateGame(S, A, pL, U, actionCount, imitationEpoch, strategy, mistakeRate)
 % [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U,
 % actionCount, imitationEpoch)
 % 
@@ -54,6 +54,11 @@ function [S, A, U, SHistory, AHistory]...
             imitationEpoch = N;
         end
         
+        % validate mistakeRate, default = 0
+        if ~exist('mistakeRate', 'var') || ~isreal(mistakeRate)
+            mistakeRate = 0;
+        end
+        
     %% initialize variables
         
         actionIndex = 0;
@@ -93,7 +98,11 @@ function [S, A, U, SHistory, AHistory]...
                 actionIndex = actionIndex + 1;
                 
                 % Apply agent's strategy
-                [connection, newA, newpL, newU] = strategy{S(agent)}(agent, A, pL, U);
+                if mistakeRate==0 || mistakeRate < rand
+                    [connection, newA, newpL, newU] = strategy{S(agent)}(agent, A, pL, U);
+                else
+                    [connection, newA, newpL, newU] = strategy{1}(agent, A, pL, U);
+                end
                 
                 if connection ~= agent
                     

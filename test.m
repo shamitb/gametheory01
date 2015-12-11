@@ -1,7 +1,7 @@
 close all;
 
 N = 50;
-%A = initialAction(N, 4/N);
+A = initialAction(N, 4/N);
 
 beta = 1;
 cost = 0.5;
@@ -17,7 +17,7 @@ strategy{4} = generateStrategyFair(strategy{2}, strategy{3});
 S = 2 * ones(N, 1);
 %S(1:10) = 2;
 
-[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 500, false, strategy);
+[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 500, false, strategy, 0.05);
 
 heat = accumarray([AHistory(:).agent; AHistory(:).connection]', 1, [N N]);
 util = sort([AHistory(:).utility]);
