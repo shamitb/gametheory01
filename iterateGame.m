@@ -143,11 +143,17 @@ function [S, A, U, SHistory, AHistory]...
                 untilImitate = -log(rand) * imitationEpoch;
                 imitationIndex = imitationIndex + 1;
                 
-                %TODO: do imitation
-                display('Imitate')
+                % utility-weighted selection of new strategy
+                w = cumsum(U);
+                rolemodel = sum(w < rand * w(end)) + 1;
+                S(agent) = S(rolemodel);
+                SHistory(imitationIndex).agent = agent;
+                SHistory(imitationIndex).strategy = S(agent);
+                SHistory(imitationIndex).time = t;
                 
             end % act or imitate
-        end % while loop                
+        end % while loop
+        SHistory=SHistory(1:imitationIndex);
     end % if valid strategy
 end
 
