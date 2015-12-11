@@ -29,9 +29,10 @@ function handle = generateStrategyGreedy(beta, cost)
                 connection = kill(randi(numel(kill)));
         end
         
-        newA = [];
-        newpL = [];
-        newU = [];
+        newA = A;
+        newA(agent, connection) = 0;
+        newpL = pathLength(newA);
+        newU = utility(newA, newpL);
 
     end
     
