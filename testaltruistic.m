@@ -7,7 +7,7 @@ N = 20;
 maxTrials = 30;
 Ucummulative = zeros(1, N);
 
-A = initialAction(N, 4/N);
+A = initialAction(N, 0.1);
 
 beta = 1;
 cost = 0.5;
@@ -28,6 +28,13 @@ for i = 1 : N
     utilitySet = [utilitySet sum(U1)];
 end
 
+for i = 1 : N
+    Atemp = A;
+    Atemp(1, i) = 0;
+    temppL = pathLength(Atemp);
+    U1 = utility(Atemp, temppL, beta, cost);
+    utilitySet = [utilitySet sum(U1)];
+end
 
 handle = generateStrategyAltruist(beta, cost);
 [connection A, pL, U] = handle(1, A, pL, U);
