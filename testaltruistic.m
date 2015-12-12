@@ -1,3 +1,4 @@
+
 function testaltruistic()
 
 clear all;
@@ -9,6 +10,7 @@ Ucummulative = zeros(1, N);
 
 A = initialAction(N, 0.1);
 
+agent = randi([1 N],1,1);;
 beta = 1;
 cost = 0.5;
 
@@ -22,7 +24,7 @@ sumUprev = sum(U);
 utilitySet = [];
 for i = 1 : N
     Atemp = A;
-    Atemp(1, i) = 1;
+    Atemp(agent, i) = 1;
     temppL = pathLength(Atemp);
     U1 = utility(Atemp, temppL, beta, cost);
     utilitySet = [utilitySet sum(U1)];
@@ -30,14 +32,14 @@ end
 
 for i = 1 : N
     Atemp = A;
-    Atemp(1, i) = 0;
+    Atemp(agent, i) = 0;
     temppL = pathLength(Atemp);
     U1 = utility(Atemp, temppL, beta, cost);
     utilitySet = [utilitySet sum(U1)];
 end
 
 handle = generateStrategyAltruist(beta, cost);
-[connection A, pL, U] = handle(1, A, pL, U);
+[connection A, pL, U] = handle(agent, A, pL, U);
 
 utilitySet = utilitySet - sumUprev
 
