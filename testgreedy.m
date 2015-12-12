@@ -2,15 +2,15 @@ function testgreedy()
 
 clear all;
 
-N = 30;
+N = 20;
 
 Ucummulative = zeros(1, N);
 
-A = initialAction(N, 0.8);
+A = initialAction(N, 0.2);
 
 agent = randi([1 N],1,1);;
-beta = 0.5;
-cost = 0.3;
+beta = 0.7;
+cost = 0.5;
 
 pL = pathLength(A);
 U = utility(A, pL, beta, cost);
