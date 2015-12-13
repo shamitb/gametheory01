@@ -3,28 +3,42 @@ function handle = generateStrategyGreedy(beta, cost)
     handle = @strategyGreedy;
 
     function [connection, newA, newpL, newU] = strategyGreedy(agent, A, pL, U)
-        % if any unlooped connections, remove one
-        % else if more than one loop, remove one
-        % else if loop gives no advantage, remove
+        % Always make best move for self
         
+        % Current connections
         kill = find(A(agent, :));
-        loop = pL(kill, agent) + 1;
-        loop(loop == 1) = inf;
-        switch numel(kill)
+        
+        % Self value through other node
+        loop = pL(:, agent)' + 1;
+        loop(agent) = 1;
+        gain = beta .^ loop;
+        gain(loop == 1) = 0;
+        
+        switch numel(kill)            
             case 0
-                connection = agent;
+                % No connections, is there a good connection?
+                [best, bestIndex] = max(gain);
+                if best > cost
+                    connection = bestIndex(randi(numel(bestIndex)));
+                else
+                    connection = agent;
+                end
             case 1
-                if loop==inf || (cost > beta ^ loop)
+                % One connection, is it good?
+                if gain(kill) < cost
                     connection = kill;
                 else
                     connection = agent;
                 end
-            case 2
-                connection = kill(2 - issorted(beta .^ (loop+rand(2,1))));
             otherwise
+                % Several connections, don't kill a unique best loop
                 critical = loop == pL(agent, agent);
                 if sum(critical) == 1
-                    kill(critical) = [];
+                    if gain(critical) == max(gain(kill))
+                        kill(kill==find(critical)) = [];
+                    else
+                        kill = find(critical);
+                    end
                 end
                 connection = kill(randi(numel(kill)));
         end
