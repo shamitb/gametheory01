@@ -8,7 +8,7 @@ Ucummulative = zeros(1, N);
 
 A = initialAction(N, 0.2);
 
-agent = randi([1 N],1,1);;
+agent = randi([1 N],1,1);
 beta = 0.7;
 cost = 0.5;
 
