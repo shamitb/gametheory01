@@ -152,6 +152,10 @@ function [S, A, U, SHistory, AHistory]...
                 SHistory(imitationIndex).time = t;
                 
             end % act or imitate
+            
+            plot(digraph(A))
+            drawnow
+            
         end % while loop
         SHistory=SHistory(1:imitationIndex);
     end % if valid strategy
