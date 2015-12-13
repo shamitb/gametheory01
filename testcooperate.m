@@ -16,24 +16,6 @@ cost = 0.5;
 pL = pathLength(A);
 U = utility(A, pL, beta, cost);
 
-% Uprev = U(agent);
-% 
-% utilitySet = [];
-% for i = 1 : N
-%     Atemp = A;
-%     Atemp(agent, i) = 1;
-%     temppL = pathLength(Atemp);
-%     U1 = utility(Atemp, temppL, beta, cost);
-%     utilitySet = [utilitySet U1(agent)];
-% end
-
-% for i = 1 : N
-%     Atemp = A;
-%     Atemp(agent, i) = 0;
-%     temppL = pathLength(Atemp);
-%     U1 = utility(Atemp, temppL, beta, cost);
-%     utilitySet = [utilitySet U1(agent)];
-% end
 prevA = A;
 prevPL = pL;
 prevU = U;
@@ -57,16 +39,5 @@ else
     U = t2U;
     pL = t2pL;
 end
-
-% if(connection ~= agent)
-%     A(agent, connection) = 0;
-%     pL = pathLength(A);
-%     U = utility(A, pL, beta, cost);
-%     
-%     utilitySet = utilitySet - Uprev
-%     Unext = U(agent);
-%     Udiff = Unext - Uprev
-%     
-% end
 
 end
