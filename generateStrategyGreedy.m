@@ -7,27 +7,26 @@ function handle = generateStrategyGreedy(beta, cost)
         % else if more than one loop, remove one
         % else if loop gives no advantage, remove
         
-        kill = find(A(agent, :) & ~pL(:, agent)');
-        
-        if any(kill)
-            connection = kill(randi(numel(kill)));
-        else
-            kill = A(agent, :);
-            switch sum(kill)
-                case 0
+        kill = find(A(agent, :));
+        loop = pL(kill, agent) + 1;
+        loop(loop == 1) = inf;
+        switch numel(kill)
+            case 0
+                connection = agent;
+            case 1
+                if loop==inf || (cost > beta ^ loop)
+                    connection = kill;
+                else
                     connection = agent;
-                case 1
-                    if (cost > beta ^ pL(agent, agent))
-                        connection = find(kill);
-                    else
-                        connection = agent;
-                    end
-                otherwise
-                    kill = find(kill);
-                    score = (pL(agent, agent) - 1 == pL(kill, agent)) + rand(size(kill))';
-                    [~, i] = min(score);
-                    connection = kill(i);
-            end
+                end
+            case 2
+                connection = kill(2 - issorted(beta .^ (loop+rand(2,1))));
+            otherwise
+                critical = loop == pL(agent, agent);
+                if sum(critical) == 1
+                    kill(critical) = [];
+                end
+                connection = kill(randi(numel(kill)));
         end
         
         newA = [];
