@@ -21,7 +21,22 @@ S = 2 * ones(N, 1);
 %S = randi(5, N, 1);% .* ones(N, 1);
 %S(1:10) = 2;
 
-[S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 500, false, strategy, 0.05);
+connectsArray = [];
+for iter = 1:500
+    [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 1, false, strategy, 0.05);
+    connectsArray = [connectsArray sum(sum(A,1)'+sum(A,2)-diag(A))/N];
+    plot(digraph(A));
+    s = 'Epoch: ';
+    s = strcat(s, num2str(actionIndex));
+    title(s);
+    drawnow
+end
+
+plot(connectsArray);
+title('Node degree over time');
+xlabel('Epoch') % x-axis label
+ylabel('Avg Node Degree') % y-axis label
+    
 
 heat = accumarray([AHistory(:).agent; AHistory(:).connection]', 1, [N N]);
 util = sort([AHistory(:).utility]);

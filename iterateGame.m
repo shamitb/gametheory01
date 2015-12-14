@@ -21,8 +21,7 @@ function [S, A, U, SHistory, AHistory]...
         U = [];
         SHistory = struct('agent', {}, 'strategy', {}, 'time', {});            
         AHistory = struct('agent', {}, 'connection', {}, 'time', {});
-        UHistory = struct('agent', {}, 'utility', {}, 'time', {});
-        
+
     else
     %% validate inputs
         N = length(S);
@@ -154,7 +153,9 @@ function [S, A, U, SHistory, AHistory]...
             end % act or imitate
                         
         end % while loop
+
         SHistory=SHistory(1:imitationIndex);
+
     end % if valid strategy
 end
 
