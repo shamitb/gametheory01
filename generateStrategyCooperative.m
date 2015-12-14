@@ -1,4 +1,4 @@
-function handle = generateStrategyCooperative(beta, cost, altruist)
+function handle = generateStrategyCooperative(beta, cost)
 
     handle = @strategyCooperative;
 
