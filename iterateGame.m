@@ -13,6 +13,8 @@ function [S, A, U, SHistory, AHistory]...
 % SHistory - struct list of strategy changes, (agent, strategy, time)
 % AHistory - struct list of actions (agent, connection, utility, time)
 
+connectsArray = [];
+
     if ~exist('S','var') || isempty(S) || ~exist('strategy', 'var') || isempty(strategy)
     %% if no strategies given return empty results
 
@@ -152,10 +154,25 @@ function [S, A, U, SHistory, AHistory]...
                 SHistory(imitationIndex).time = t;
                 
             end % act or imitate
-                        
+                   
+            connectsArray = [connectsArray sum(sum(A,1)'+sum(A,2)-diag(A))/N];
+            sum(A)
+
+            plot(digraph(A))
+            s = 'Epoch: ';
+            s = strcat(s, num2str(actionIndex));
+            title(s);
+            drawnow
+            
         end % while loop
         SHistory=SHistory(1:imitationIndex);
     end % if valid strategy
+    
+    plot(connectsArray);
+    title('Node degree over time');
+    xlabel('Epoch') % x-axis label
+    ylabel('Avg Node Degree') % y-axis label
+    
 end
 
 
