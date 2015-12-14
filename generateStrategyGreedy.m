@@ -17,8 +17,9 @@ function handle = generateStrategyGreedy(beta, cost)
         switch numel(kill)            
             case 0
                 % No connections, is there a good connection?
-                [best, bestIndex] = max(gain);
+                best = max(gain);
                 if best > cost
+                    bestIndex = find(gain==best);
                     connection = bestIndex(randi(numel(bestIndex)));
                 else
                     connection = agent;
