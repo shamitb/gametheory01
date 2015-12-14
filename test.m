@@ -23,7 +23,7 @@ S = 2 * ones(N, 1);
 
 connectsArray = [];
 for iter = 1:500
-    [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 500, false, strategy, 0.05);
+    [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 1, false, strategy, 0.05);
     connectsArray = [connectsArray sum(sum(A,1)'+sum(A,2)-diag(A))/N];
     plot(digraph(A));
     s = 'Epoch: ';
