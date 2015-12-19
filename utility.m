@@ -1,11 +1,11 @@
 function [U, pL] = utility(A, pL, b, c, temporary)
-% score = utility(A, pL, beta, cost)
+% [U, pL] = utility(A, pL, beta, cost)
 % adjacency matrix A (N×N)
 % optional precomputed path length matrix pL
-% optional beta, default is 1
-% optional cost, default is 1
+% optional b, default is 1
+% optional c, default is 1
 % optional temporary, default is false
-% returns N-by-1 vector
+% returns N×1 utility vector and N×N path length matrix
 
     persistent BETA
     persistent COST
