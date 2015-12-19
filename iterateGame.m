@@ -1,17 +1,18 @@
-function [S, A, U, SHistory, AHistory]...
-    = iterateGame(S, A, pL, U, actionCount, imitationEpoch, strategy, mistakeRate)
-% [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U,
-% actionCount, imitationEpoch)
+function [S, A, U, statistics]...
+    = iterateGame(S, A, pL, U, eventCount, imitationEpoch, strategy, mistakeRate)
+% [S, A, U, statistics] = 
+%     iterateGame(S, A, pL, U, actionCount, imitationEpoch)
 % 
 % S - Nx1 vector of agent strategies (required!)
 % A - NxN initial adjacency matrix (default zeros)
 % pL - precomputed NxN path length matrix (default recompute)
 % U - precomputed Nx1 vector of utilities (default recompute)
-% actionCount - number of actions to take (default = N)
-% imitationEpoch - average time between imitations or false (default = N)
 %
-% SHistory - struct list of strategy changes, (agent, strategy, time)
-% AHistory - struct list of actions (agent, connection, utility, time)
+% eventCount - number of events to proceed (default = N)
+% imitationEpoch - average time between imitations or false (default = N)
+% mistakeRate - probability of random action
+%
+% statistics - table of events
 
     if ~exist('S','var') || isempty(S) || ~exist('strategy', 'var') || isempty(strategy)
     %% if no strategies given return empty results
@@ -19,74 +20,98 @@ function [S, A, U, SHistory, AHistory]...
         S = [];
         A = [];
         U = [];
-        SHistory = struct('agent', {}, 'strategy', {}, 'time', {});            
-        AHistory = struct('agent', {}, 'connection', {}, 'time', {});
+        SHistory = [];            
+        AHistory = [];
+        statistics = [];
 
     else
     %% validate inputs
+    
+        M = length(strategy); % number of strategies
         N = length(S);
         
         % validate A, default = zeros(N)
-        if ~exist('A', 'var') || isempty(A) || any(size(A)~=[N N])
+        if ~exist('A', 'var') ||...
+           isempty(A) ||...
+           any(size(A)~=[N N])
+       
             A = sparse(N, N);
             pL = zeros(N);
             U = zeros(N, 1);
         end
 
         % validate LP, default = leastPath(A)
-        if ~exist('LP', 'var') || isempty(pL) || any(size(pL)~=[N N])
+        if ~exist('LP', 'var') ||...
+           isempty(pL) ||...
+           any(size(pL)~=[N N])
+       
             pL = pathLength(A);
         end
         
         % validate U, default = utility(A)
-        if ~exist('U', 'var') || isempty(U) || any(size(U)~=[N 1])
+        if ~exist('U', 'var') ||...
+           isempty(U) ||...
+           any(size(U)~=[N 1])
+       
             U = utility(A, pL);
         end
         
-        % validate actionCount, default = N
-        if ~exist('actionCount', 'var') || ~isreal(actionCount)
-            actionCount = N;
+        % validate eventCount, default = N
+        if ~exist('eventCount', 'var') ||...
+           ~isreal(eventCount) ||...
+           eventCount < 1
+       
+            eventCount = N;
         end
         
         % validate imitationEpoch, default = N
-        if ~exist('imitationEpoch', 'var') || ~isreal(imitationEpoch)
+        if ~exist('imitationEpoch', 'var') ||...
+           ~isreal(imitationEpoch)
+       
             imitationEpoch = N;
         end
         
         % validate mistakeRate, default = 0
-        if ~exist('mistakeRate', 'var') || ~isreal(mistakeRate)
+        if ~exist('mistakeRate', 'var') ||...
+           ~isreal(mistakeRate)
+       
             mistakeRate = 0;
         end
         
     %% initialize variables
         
-        actionIndex = 0;
-        imitationIndex = 0;
+        i = 0;
+        [from, to] = find(A);
+        assortM = accumarray([S(from) S(to)], 1, [M M]);
         
-        if imitationEpoch
-            % preallocate strategy history
-            SHistory(ceil(actionCount / imitationEpoch) + 10) = struct(...
-                'agent', [], 'strategy', [], 'time', []);
-        else
-            % empty strategy history
-            imitationEpoch = inf;
-            SHistory = struct('agent', {}, 'strategy', {}, 'time', {});            
+        agent = zeros(eventCount, 1);
+        agentS = zeros(eventCount, 1);
+        assortativity = zeros(eventCount, 1);
+        
+        direction = zeros(eventCount, 1);     % 1 make, -1 break, 0 else
+        imitate = false(eventCount, 1);
+        mistake = false(eventCount, 1);
+        target = zeros(eventCount, 1);
+        targetS = zeros(eventCount, 1);
+        time = zeros(eventCount, 1);
+        util = zeros(eventCount, N);
+        
+        if ~imitationEpoch
+            imitationEpoch = inf;            
         end
-        
-        % preallocate action history
-        AHistory(actionCount) =...
-            struct('agent', [], 'connection', [], 'utility', [], 'time', []);
-        
+         
         % start poisson process
         t = 0;
         untilAction = -log(rand);
         untilImitate = -log(rand) * imitationEpoch;
         
     %% main loop        
-        while actionCount > actionIndex
-            
+        while eventCount > i
+
             % select random agent
-            agent = randi(N);
+            i = i + 1;
+            agent(i) = randi(N);
+            agentS(i) = S(agent(i));
             
             if untilAction < untilImitate
         %% action
@@ -94,43 +119,43 @@ function [S, A, U, SHistory, AHistory]...
                 untilImitate = untilImitate - untilAction;
                 t = t + untilAction;
                 untilAction = -log(rand);
-                actionIndex = actionIndex + 1;
                 
                 % Apply agent's strategy
-                if mistakeRate==0 || mistakeRate < rand
-                    [connection, newA, newpL, newU] = strategy{S(agent)}(agent, A, pL, U);
+                if mistakeRate > rand
+                    [target(i), newpL, newU] = strategy{1}(agent(i), A, pL, U);
+                    mistake(i) = true;
                 else
-                    [connection, newA, newpL, newU] = strategy{1}(agent, A, pL, U);
+                    [target(i), newpL, newU] = strategy{S(agent(i))}(agent(i), A, pL, U);
                 end
                 
-                if connection ~= agent
+                targetS(i) = S(target(i));
+                
+                if agent(i)~=target(i)
                     
-                    % Update A
-                    A(agent, connection) = 1 - A(agent, connection);
+                    if A(agent(i), target(i))
+                        direction(i) = -1;
+                    else
+                        direction(i) = 1;
+                    end
                     
-                    % Compute pL if needed
+                    A(agent(i), target(i)) =...
+                        A(agent(i), target(i)) + direction(i);
+                    assortM(agentS(i), targetS(i)) =...
+                        assortM(agentS(i), targetS(i)) + direction(i);
+                    
                     if isempty(newpL)
                         pL = pathLength(A);
                     else
                         pL = newpL;
                     end
                     
-                    % Compute U if needed
                     if isempty(newU)
                         U = utility(A, pL);
                     else
                         U = newU;
                     end
                     
-                    % Record utility in history
-                    AHistory(actionIndex).utility = U;
-                    
                 end
-                
-                % Record action in history
-                AHistory(actionIndex).agent = agent;
-                AHistory(actionIndex).connection = connection;
-                AHistory(actionIndex).time = t;
                 
             % imitate?
             else
@@ -140,22 +165,42 @@ function [S, A, U, SHistory, AHistory]...
                 untilAction = untilAction - untilImitate;
                 t = t + untilImitate;
                 untilImitate = -log(rand) * imitationEpoch;
-                imitationIndex = imitationIndex + 1;
+                imitate(i) = true;
                 
                 % utility-weighted selection of new strategy
-                w = cumsum(U) - min(U);
-                rolemodel = sum(w < rand * w(end)) + 1;
-                S(agent) = S(rolemodel);
-                SHistory(imitationIndex).agent = agent;
-                SHistory(imitationIndex).strategy = S(agent);
-                SHistory(imitationIndex).time = t;
+                w = cumsum(U - min(U));
+                target(i) = sum(w < rand * w(end)) + 1;
+                targetS(i) = S(target(i));
+                
+                if agentS(i)~=targetS(i)
+                    S(agent(i)) = S(target(i));
+                    [from, to] = find(A);
+                    assortM = accumarray([S(from) S(to)], 1, [M M]);
+                end
                 
             end % act or imitate
-                        
+            
+            % calculate strategy assortativity
+            e = assortM / sum(assortM(:));
+            a = sum(e, 2);
+            b = sum(e);
+            assortativity(i) = (sum(e(1:M+1:end)) - b * a) / (1 - b * a);
+            
+            time(i) = t;
+            util(i, :) = U;
+            
         end % while loop
-
-        SHistory=SHistory(1:imitationIndex);
-
+        
+        statistics = table(agent,...
+                           agentS,...
+                           assortativity,...
+                           direction,...
+                           imitate,...
+                           mistake,...
+                           target,...
+                           targetS,...
+                           time,...
+                           util);
     end % if valid strategy
 end
 
