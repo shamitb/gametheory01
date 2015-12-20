@@ -58,19 +58,6 @@ function handle = generateStrategyAltruist(b)
         check = find(A(agent, :));
         m = length(check);
         if m > 0
-%{
-            maxLength = max(pL(isfinite(pL))) + 1;
-            lengths = zeros(m, maxLength);
-            core = pL(check, check);
-            core(isinf(core)) = maxLength;
-            for i = 1:m
-                lengths(i, :) = accumarray(core(:, i), 1, [maxLength, 1]);
-            end
-            maxLength = maxLength - 1;
-            lengths = lengths(:, 1:maxLength);
-            score = lengths * b.^(1:maxLength)';
-%}
-            score = sum(b.^pL(check, check), 2);
             score = U(check);
             [~, i] = max(score);
 
@@ -123,14 +110,7 @@ function handle = generateStrategyAltruist(b)
         check = find(A(agent, :));
         m = length(check);
         if m > 0
-            maxLength = max(pL(isfinite(pL))) + 1;
-            lengths = zeros(m, maxLength);
-            core = pL(check, check);
-            core(isinf(core)) = maxLength;
-            for i = 1:m
-                lengths(i, :) = accumarray(core(:, i), 1, [maxLength, 1]);
-            end
-            score = sum(lengths(:, 1:maxLength-1), 2);
+            score = U(check);
             check = check(find(score==max(score)));
             check = check(randi(length(check)));
             checkA = A;
