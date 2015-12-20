@@ -1,10 +1,13 @@
-function [coeff, inDist, outDist] = degreeAssortativity(A)
+function [inin, inout, outin, outout, inDist, outDist] = degreeAssortativity(A)
 % [coeff, indist, outdist] = degreeAssortativity(A)
 % 
 % From adjacency matrix A, computes:
 %
-% coeff   - Pearson's degree correlation 1×4
-%           in/in, out/in, in/out, out/out
+% inin    - Pearson's degree correlations
+% inout
+% outin
+% outout
+% 
 % inDist  - in degree distribution
 % outDist - out degree distribution
 
@@ -20,27 +23,22 @@ outDegree = full(sum(A, 2))';
 inDist = accumarray(inDegree', 1) / N;
 outDist = accumarray(outDegree', 1) / N;
 
-meanInDegree = mean(inDegree);
-meanOutDegree = mean(outDegree);
+centeredIn = inDegree - mean(inDegree);
+centeredOut = outDegree - mean(outDegree);
 
-centeredInDegree = inDegree - meanInDegree;
-centeredOutDegree = outDegree - meanOutDegree;
+[from, to] = find(A);        % index over all edges
 
-[from, to] = find(A);
-
-coeff(in, in)  =  (centeredInDegree(from) * centeredInDegree(to)') /...
-                  (centeredInDegree(from) * centeredInDegree(from)') /...
-                  (centeredInDegree(to) * centeredInDegree(to)');            
-coeff(in, out) =  (centeredInDegree(from) * centeredOutDegree(to)') /...
-                  (centeredInDegree(from) * centeredInDegree(from)') /...
-                  (centeredOutDegree(to) * centeredOutDegree(to)');
-coeff(out, in) =  (centeredOutDegree(from) * centeredInDegree(to)') /...
-                  (centeredOutDegree(from) * centeredOutDegree(from)') /...
-                  (centeredInDegree(to) * centeredInDegree(to)');
-coeff(out, out) = (centeredOutDegree(from) * centeredOutDegree(to)') /...
-                  (centeredOutDegree(from) * centeredOutDegree(from)') /...
-                  (centeredOutDegree(to) * centeredOutDegree(to)');
-              
-coeff = coeff(:)';
+inin  =  (centeredIn(from) * centeredIn(to)') /...
+         (centeredIn(from) * centeredIn(from)') /...
+         (centeredIn(to) * centeredIn(to)');            
+inout =  (centeredIn(from) * centeredOut(to)') /...
+         (centeredIn(from) * centeredIn(from)') /...
+         (centeredOut(to) * centeredOut(to)');
+outin =  (centeredOut(from) * centeredIn(to)') /...
+         (centeredOut(from) * centeredOut(from)') /...
+         (centeredIn(to) * centeredIn(to)');
+outout = (centeredOut(from) * centeredOut(to)') /...
+         (centeredOut(from) * centeredOut(from)') /...
+         (centeredOut(to) * centeredOut(to)');
 
 end
