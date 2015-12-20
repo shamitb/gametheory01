@@ -13,15 +13,16 @@ function handle = generateStrategyCooperative(b, c)
         
         team = isfinite(pL(:, agent));
         team(agent) = true;
-        team = find(team);
         bestU = sum(U(team));
         
         % check disconnect from one of the parasites
-        parasite = team(A(agent, team)>0);
+        parasite = find(A(agent, :) & ~team');
         if ~isempty(parasite)
             connection = parasite(randi(numel(parasite)));
             bestU = bestU + c;
         end
+        
+        team = find(team);
         
         % find if there are team members I am not following
         check = team(~A(agent, team));
