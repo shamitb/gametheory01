@@ -2,7 +2,7 @@ function handle = generateStrategyGreedy(beta, cost)
 
     handle = @strategyGreedy;
 
-    function [connection, newA, newpL, newU] = strategyGreedy(agent, A, pL, U)
+    function [connection, newpL, newU] = strategyGreedy(agent, A, pL, U)
         % Always make best move for self
         
         % Current connections
@@ -44,7 +44,6 @@ function handle = generateStrategyGreedy(beta, cost)
                 connection = kill(randi(numel(kill)));
         end
         
-        newA = [];
         newpL = [];
         newU = [];
 
