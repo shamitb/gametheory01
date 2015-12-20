@@ -20,8 +20,8 @@ N = length(A);
 inDegree = full(sum(A));
 outDegree = full(sum(A, 2))';
 
-inDist = accumarray(inDegree', 1) / N;
-outDist = accumarray(outDegree', 1) / N;
+inDist = accumarray(inDegree(inDegree>0)', 1) / N;
+outDist = accumarray(outDegree(outDegree>0)', 1) / N;
 
 centeredIn = inDegree - mean(inDegree);
 centeredOut = outDegree - mean(outDegree);
