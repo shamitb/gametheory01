@@ -1,114 +1,147 @@
-function handle = generateStrategyAltruist(beta, cost)
+function handle = generateStrategyAltruist(b)
+    % Always choose to improve total score
 
-    handle = @strategyAltruist;
+    if b < 1
+        handle = @strategyAltruist;
+    else
+        handle = @strategyAltruistEasy;
+    end
 
-    function [connection, newA, newpL, newU] = strategyAltruist(agent, A, pL, U)
-    % Benefit all players
-
-        N = numel(U);
+    function [connection, newpL, newU] = strategyAltruist(agent, A, pL, U)
+    
+        N = length(U);
+        connection = agent;
+        newpL = pL;
+        newU = U;
         
         % original "costless" utility
         % base(i, j) = i's contribution to j's utility
-        base = beta.^pL.*(pL~=0);
-        
-        % only check unconnected
-        A(agent, agent) = 1;
-        check = find(~A(agent, :));
-        m = numel(check);
-        A(agent, agent) = 0;
-        
+        base = b.^pL;
+                
         % estimate new pathlength from agent through connection
-        pL(pL==0) = inf;
-        pathOut = pL(check, :) + 1;
-        pathOut = bsxfun(@min, pathOut, pL(agent,:));
-        for i = 1:m
-            pathOut(i, check(i)) = 1;
-        end
-        pathOut(pathOut==inf)=0;
+        pathOut = bsxfun(@min, pL + 1, pL(agent,:));
+        pathOut(1:N+1:end) = 1;
+        pathOut(agent, :) = inf;
         
         % improvement from path out
         helpOut = bsxfun(...
-            @minus, beta.^pathOut.*(pathOut~=0), base(agent,:));
+            @minus, b.^pathOut, base(agent,:));
         
         % estimate new pathlength through agent to connection
-        pathIn = pL(:, agent) + 1;
-        pathIn = bsxfun(@min, pathIn, pL(:, check));
+        pathIn = bsxfun(@min, pL(:, agent) + 1, pL);
         pathIn(agent, :) = 1;
-        pathIn(pathIn==inf) = 0;
-        pL(pL==inf) = 0;
+        pathIn(:, agent) = inf;
         
         % improvement from path in
-        helpIn = beta.^pathIn.*(pathIn~=0) - base(:, check);
+        helpIn = b.^pathIn - base;
         
         % total improvement
-        deltaU = sum(helpOut, 2) + sum(helpIn)' - helpIn(agent, :)';        
+        deltaU = sum(helpOut, 2) + sum(helpIn)';        
 
         % take best result, randomize if more than one
-        best = max(deltaU);
-        connection = check(find(deltaU==best));
-        connection = connection(randi(numel(connection)));
+        check = find(deltaU==max(deltaU));
+        check = check(randi(numel(check)));
         
         % compute new move
-        checkA = A;
-        checkA(agent, connection) = 1 - checkA(agent, connection);
-        checkpL = pathLength(checkA);
-        checkU = utility(checkA, checkpL);
-        
-        % use only if better than original
-        if sum(checkU) < sum(U)
-            connection = agent;
-            newA = A;
-            newpL = pL;
-            newU = U;
-        else
-            newA = checkA;
-            newpL = checkpL;
-            newU = checkU;
-        end
-
-        % check for redundancies
-        check = find(A(agent, :));
-        if ~isempty(check)
-% heuristic                
-            m = numel(check);
-            l = max(pL(:)) + 1;
-            lengths = zeros(m, l);
-            core = pL(check, check) + 1;
-            for i = 1:m
-                lengths(i, :) = accumarray(core(:,i), 1, [l, 1])';
-            end
-            lengths = lengths(:, 2:end);
-            lengths = lengths + 1e-8 * rand(size(lengths));
-            score = lengths * beta.^(1:l-1)';
-            [~, i] = max(score);
-                
+        if A(agent, check)==0
             checkA = A;
-            checkA(agent, check(i)) = 0;
-            checkpL = pathLength(checkA);
-            checkU = utility(checkA, checkpL);
-            if mean(checkU) > mean(newU)
-                connection = check(i);
-                newA = checkA;
+            checkA(agent, check) = 1;
+            [checkU, checkpL] = utility(checkA);
+            if sum(checkU) > sum(newU)
                 newpL = checkpL;
                 newU = checkU;
+                connection = check;
             end
-                
-% brute force :( works but ugh
-%{
-                for i = check(randperm(numel(check)))
-                    checkA = A;
-                    checkA(agent, i) = 0;
-                    checkpL = pathLength(checkA);
-                    checkU = utility(checkA, checkpL);
-                    if mean(checkU) > bestU
-                        newA = checkA;
-                        newpL = checkpL;
-                        newU = checkU;
-                        bestU = sum(checkU);
-                    end
-                end
-%}
         end
         
+        % check for redundancies
+        check = find(A(agent, :));
+        m = length(check);
+        if m > 0
+%{
+            maxLength = max(pL(isfinite(pL))) + 1;
+            lengths = zeros(m, maxLength);
+            core = pL(check, check);
+            core(isinf(core)) = maxLength;
+            for i = 1:m
+                lengths(i, :) = accumarray(core(:, i), 1, [maxLength, 1]);
+            end
+            maxLength = maxLength - 1;
+            lengths = lengths(:, 1:maxLength);
+            score = lengths * b.^(1:maxLength)';
+%}
+            score = sum(b.^pL(check, check), 2);
+            score = U(check);
+            [~, i] = max(score);
+
+            checkA = A;
+            checkA(agent, check(i)) = 0;
+            [checkU, checkpL] = utility(checkA);
+            if sum(checkU) > sum(newU)
+                connection = check(i);
+                newpL = checkpL;
+                newU = checkU;
+            end                
+        end
+    end
+
+    function [connection, newpL, newU] = strategyAltruistEasy(agent, A, pL, U)
+    
+        N = length(U);
+        connection = agent;
+        newpL = pL;
+        newU = U;
+        
+        % current state
+        base = isfinite(pL);
+                
+        pathOut = bsxfun(@or, base, base(agent, :));
+        pathOut(1:N+1:end) = true;
+        helpOut = pathOut - base;
+        
+        pathIn = bsxfun(@or, base, base(:, agent));
+        pathIn(agent, :) = true;
+        helpIn = pathIn - base;
+        
+        deltaU = sum(helpOut, 2)' + sum(helpIn);
+        deltaU(agent) = 0;
+        check = find(deltaU == max(deltaU));
+        check = check(randi(length(check)));
+
+        if A(agent, check)==0
+            checkA = A;
+            checkA(agent, check) = 1;
+            checkpL = pathLength(checkA);
+            checkU = utility(checkA, checkpL);
+            if sum(checkU) > sum(newU)
+                newpL = checkpL;
+                newU = checkU;
+                connection = check;
+            end
+        end
+        
+        check = find(A(agent, :));
+        m = length(check);
+        if m > 0
+            maxLength = max(pL(isfinite(pL))) + 1;
+            lengths = zeros(m, maxLength);
+            core = pL(check, check);
+            core(isinf(core)) = maxLength;
+            for i = 1:m
+                lengths(i, :) = accumarray(core(:, i), 1, [maxLength, 1]);
+            end
+            score = sum(lengths(:, 1:maxLength-1), 2);
+            check = check(find(score==max(score)));
+            check = check(randi(length(check)));
+            checkA = A;
+            checkA(agent, check) = 0;
+            checkpL = pathLength(checkA);
+            checkU = utility(checkA, checkpL);
+            if sum(checkU) > sum(newU)
+                newpL = checkpL;
+                newU = checkU;
+                connection = check;
+            end
+        end        
     end
 end
