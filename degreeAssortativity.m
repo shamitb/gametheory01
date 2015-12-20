@@ -1,14 +1,24 @@
-function coeff = degreeAssortativity(A)
-% coeff = degreeAssortativity(A)
-% compute Pearson's correlation coefficients for degree assortativity
-% returns 2×2 matrix (in, out)
+function [coeff, inDist, outDist] = degreeAssortativity(A)
+% [coeff, indist, outdist] = degreeAssortativity(A)
+% 
+% From adjacency matrix A, computes:
+%
+% coeff   - Pearson's degree correlation 1×4
+%           in/in, out/in, in/out, out/out
+% inDist  - in degree distribution
+% outDist - out degree distribution
+
 
 in = 1;
 out = 2;
 coeff = zeros(2);
+N = length(A);
 
 inDegree = full(sum(A));
 outDegree = full(sum(A, 2))';
+
+inDist = accumarray(inDegree', 1) / N;
+outDist = accumarray(outDegree', 1) / N;
 
 meanInDegree = mean(inDegree);
 meanOutDegree = mean(outDegree);
