@@ -58,7 +58,11 @@ function handle = generateStrategyAltruist(b)
         check = find(A(agent, :));
         m = length(check);
         if m > 0
-            score = U(check);
+            if b < 1
+                score = sum(b .^ pL(check, check));
+            else
+                score = sum(pL(check, check) <= N);
+            end
             [~, i] = max(score);
 
             checkA = A;
