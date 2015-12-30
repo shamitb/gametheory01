@@ -89,6 +89,8 @@ function [A, pL, U, statistics]...
         target = zeros(imax, 1);
         time = zeros(imax, 1);
         util = zeros(imax, N);
+        
+        unhappy = true(N, 1);           % mask to avoid repeat evaluations
 
         if fullStats
             inmax = max(sum(A)) + 5;
@@ -141,11 +143,17 @@ function [A, pL, U, statistics]...
             if mistakeRate > rand
                 [target(i), newpL, newU] = strategy{1}(agent(i), A, pL, U);
                 mistake(i) = true;
-            else
+            elseif unhappy(agent(i))
                 [target(i), newpL, newU] = strategy{S(agent(i))}(agent(i), A, pL, U);
+            else
+                target(i) = agent(i);
             end
+            
+            unhappy(agent(i)) = false;
                 
             if agent(i)~=target(i)
+                unhappy(:) = true;
+                
                 if A(agent(i), target(i))
                     direction(i) = -1;
                 else

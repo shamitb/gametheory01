@@ -10,9 +10,9 @@ function handle = generateStrategyGreedy(beta, cost)
         
         % Self value through other node
         loop = pL(:, agent)' + 1;
-        loop(agent) = 1;
+        loop(agent) = inf;
         gain = beta .^ loop;
-        gain(loop == 1) = 0;
+        gain(isnan(gain)) = 0;
         
         switch numel(kill)            
             case 0

@@ -41,4 +41,17 @@ outout = (centeredOut(from) * centeredOut(to)') /...
      sqrt(centeredOut(from) * centeredOut(from)') /...
      sqrt(centeredOut(to) * centeredOut(to)');
 
+if isnan(inin)
+    inin = 0;
+end
+if isnan(inout)
+    inout = 0;
+end
+if isnan(outin)
+    outin = 0;
+end
+if isnan(outout)
+    outout = 0;
+end
+
 end
