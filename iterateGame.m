@@ -66,8 +66,8 @@ function [A, pL, U, statistics]...
             duration = N;
         end
         
-        % preallocation for events should be enough 99.9% of the time
-        imax = poissinv(0.999, duration);
+        % preallocation for events
+        imax = ceil(duration);
                 
         % validate mistakeRate, default = 0
         if ~exist('mistakeRate', 'var') ||...
@@ -79,7 +79,7 @@ function [A, pL, U, statistics]...
         
     %% initialize variables
         
-        i = 0;
+        i = 1;
         [from, to] = find(A);
         assortM = accumarray([S(from) S(to)], 1, [M M]);
         
@@ -112,9 +112,6 @@ function [A, pL, U, statistics]...
         
     %% main loop        
         while duration > t;
-
-            % select random agent
-            i = i + 1;
 
             % allocate more space
             if i > imax
@@ -179,43 +176,45 @@ function [A, pL, U, statistics]...
                 else
                     U = newU;
                 end
-                    
+                
+                time(i) = t;
+                util(i, :) = U;
+                
+                if fullStats
+                
+                    mixing(i) = mixingAssortativity(assortM);
+                    [inin(i), inout(i), outin(i), outout(i), inD, outD] =...
+                        degreeAssortativity(A);
+                
+                    ink = length(inD);
+                    outk = length(outD);
+                
+                    if ink > inmax
+                        inmax = ink + 1;
+                        indegree(imax, inmax) = 0;
+                    end
+                    indegree(i, 1:ink) = inD;
+                
+                    if outk > outmax
+                        outmax = outmax + 1;
+                        outdegree(imax, outmax) = 0;
+                    end
+                    outdegree(i, 1:outk) = outD;
+                
+                end
+
+                i = i + 1;    
             end
             
-            if fullStats
-                
-                mixing(i) = mixingAssortativity(assortM);
-                [inin(i), inout(i), outin(i), outout(i), inD, outD] =...
-                    degreeAssortativity(A);
-                
-                ink = length(inD);
-                outk = length(outD);
-                
-                if ink > inmax
-                    inmax = ink + 1;
-                    indegree(imax, inmax) = 0;
-                end
-                indegree(i, 1:ink) = inD;
-                
-                if outk > outmax
-                    outmax = outmax + 1;
-                    outdegree(imax, outmax) = 0;
-                end
-                outdegree(i, 1:outk) = outD;
-                
-            end
-            
-            time(i) = t;
-            util(i, :) = U;
-            
+                        
             % advance time
             untilAction = -log(rand);
             t = t + untilAction;
             
         end % while loop
         
-        if i > 0
-            trim = i+1:imax;
+        if i > 1
+            trim = i:imax;
         
             agent(trim) = [];
             direction(trim) = [];
