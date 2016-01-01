@@ -102,6 +102,9 @@ function [S, A, pL, U, statistics]...
         strategyImitated = zeros(imax, 1);  % strategy imitated
         time = zeros(imax, 1);
         util = zeros(imax, 5 * M);
+        
+        uprate = zeros(imax, M);
+        dnrate = zeros(imax, M);
 
         inmax = max(sum(A)) + 5;
         outmax = max(sum(A,2)) + 5;
@@ -151,11 +154,21 @@ function [S, A, pL, U, statistics]...
             
             if isempty(actionStatistics)
                 actionStatistics.util = U';
+                actionStatistics.agent = 1;
+                actionStatistics.direction = zeros(1, N);
             end
+            
             util(i, 1:5) = fivenum(actionStatistics.util);
+            uprate(i, 1) = nnz(actionStatistics.direction==1)/actionDuration;
+            dnrate(i, 1) = nnz(actionStatistics.direction==-1)/actionDuration;
+            
             for s = 2:M
                 util(i, (1:5) + s * 5 - 5) =...
                     fivenum(actionStatistics.util(:, S==s));
+                uprate(i, s) = nnz(actionStatistics.direction==1 ...
+                                   & S(actionStatistics.agent)==s)/actionDuration;
+                dnrate(i, s) = nnz(actionStatistics.direction==-1 ...
+                                   & S(actionStatistics.agent)==s)/actionDuration;
             end
             t = t + actionDuration;
             time(i) = t;
@@ -190,6 +203,9 @@ function [S, A, pL, U, statistics]...
             strategyImitated(trim, :) = [];
             time(trim) = [];
             util(trim, :) = [];
+            
+            uprate(trim, :) = [];
+            dnrate(trim, :) = [];
 
             indegree(trim,:) = [];
             outdegree(trim,:) = [];
@@ -203,6 +219,8 @@ function [S, A, pL, U, statistics]...
                                strategyImitated,...
                                time,...
                                util,...
+                               uprate,...
+                               dnrate,...
                                indegree,...
                                outdegree,...
                                inin,...
