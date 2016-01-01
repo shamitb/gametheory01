@@ -102,7 +102,8 @@ function [S, A, pL, U, statistics]...
         strategyImitated = zeros(imax, 1);  % strategy imitated
         time = zeros(imax, 1);
         util = zeros(imax, 5 * M);
-        
+
+        meanutil = zeros(imax, M);
         uprate = zeros(imax, M);
         dnrate = zeros(imax, M);
 
@@ -130,6 +131,9 @@ function [S, A, pL, U, statistics]...
                 
                 w = U - min(U);
                 w = w + max(w) / (imitationStrength - 1);
+                if max(w) == 0
+                    w(:) = 1;
+                end
                 w = cumsum(w);
                 target = sum(w < rand * w(end)) + 1;
                 
@@ -159,12 +163,15 @@ function [S, A, pL, U, statistics]...
             end
             
             util(i, 1:5) = fivenum(actionStatistics.util);
+            meanutil(i, 1) = mean(actionStatistics.util(:));
             uprate(i, 1) = nnz(actionStatistics.direction==1)/actionDuration;
             dnrate(i, 1) = nnz(actionStatistics.direction==-1)/actionDuration;
             
             for s = 2:M
+                sutil = actionStatistics.util(:, S==s);
                 util(i, (1:5) + s * 5 - 5) =...
-                    fivenum(actionStatistics.util(:, S==s));
+                    fivenum(sutil);
+                meanutil(i, s) = mean(sutil(:));
                 uprate(i, s) = nnz(actionStatistics.direction==1 ...
                                    & S(actionStatistics.agent)==s)/actionDuration;
                 dnrate(i, s) = nnz(actionStatistics.direction==-1 ...
@@ -204,6 +211,7 @@ function [S, A, pL, U, statistics]...
             time(trim) = [];
             util(trim, :) = [];
             
+            meanutil(trim, :) = [];
             uprate(trim, :) = [];
             dnrate(trim, :) = [];
 
@@ -219,6 +227,7 @@ function [S, A, pL, U, statistics]...
                                strategyImitated,...
                                time,...
                                util,...
+                               meanutil,...
                                uprate,...
                                dnrate,...
                                indegree,...
