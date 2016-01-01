@@ -116,21 +116,21 @@ function [A, pL, U, statistics]...
             % allocate more space
             if i > imax
                 imax = imax + ceil(duration - t) + 5;
-                agent(imax) = 0;
-                direction(imax) = 0;     % 1 make, -1 break, 0 else
-                mistake(imax) = 0;
-                target(imax) = 0;
-                time(imax) = 0;
+                agent(imax, 1) = 0;
+                direction(imax, 1) = 0;     % 1 make, -1 break, 0 else
+                mistake(imax, 1) = 0;
+                target(imax, 1) = 0;
+                time(imax, 1) = 0;
                 util(imax, N) = 0;
                 
                 if fullStats
                     indegree(imax, 1) = 0;
                     outdegree(imax, 1) = 0;
-                    inin(imax) = 0;
-                    inout(imax) = 0;
-                    outin(imax) = 0;
-                    outout(imax) = 0;
-                    mixing(imax) = 0;
+                    inin(imax, 1) = 0;
+                    inout(imax, 1) = 0;
+                    outin(imax, 1) = 0;
+                    outout(imax, 1) = 0;
+                    mixing(imax, 1) = 0;
                 end
             end
             
@@ -229,7 +229,7 @@ function [A, pL, U, statistics]...
                                target,...
                                time,...
                                util);
-        
+
             if fullStats
             
                 indegree(trim,:) = [];
