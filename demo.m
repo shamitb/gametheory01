@@ -29,6 +29,9 @@ strategy{9} = generateStrategyFair(strategy{4}, strategy{2});
 %   conserve = cooperative/altruist
 strategy{10} = generateStrategyFair(strategy{4}, strategy{3});
 
+% Follow Max
+strategy{11} = generateStrategyFollowMax(beta, cost);
+
 %% Greedy demo
 
 N = 20;
@@ -50,6 +53,26 @@ end
 
 pause()
 
+%% Follow Max demo
+
+N = 20;
+S = 11 * ones(N, 1);
+A = initialAction(N, 4/N);
+
+pL = pathLength(A);
+U = utility(A, pL, beta, cost);
+
+P = plot(digraph(A), 'nodecdata', S);
+drawnow;
+
+for iter = 1:200
+    x = P.XData; y = P.YData;
+    [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U, 1, false, strategy, 0.0);
+    P = plot(digraph(A), 'layout', 'force', 'xstart', x, 'ystart', y, 'Iterations', 1, 'nodecdata', S);
+    drawnow;
+end
+
+pause()
 %% Altruist demo
 
 N = 20;
