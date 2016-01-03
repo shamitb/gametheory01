@@ -46,59 +46,32 @@ stratColors = [
 %sOverTime = zeros(duration, nrStrategies); % distribution of strategies
 %uOverTime = zeros(duration, 1); % utility change over time
 
-[newS, newA, newpL, newU, statistics]...
-    = evolveGame(S, A, pL, U, duration, strategy, imitationEpoch, imitationStrength, mistakeRate);
 
 
-figure;
-set(gca, 'ColorOrder', stratColors, 'NextPlot', 'replacechildren');
-%for i=1:duration
-%    fprintf('Iteration %i \n',i);
-    % currently makes a step of t=5 every iteration
-%    [newS, newA, newpL, newU, statistics]...
-%        = evolveGame(S, A, pL, U, 5, strategy, imitationEpoch, imitationStrength, mistakeRate);
-    
-% set Matlab's default color order
-% set(gca, 'ColorOrder', origColorOrder, 'NextPlot', 'replacechildren');
-    
-% top left plot
-% subplot(2,2,1);
-%    h = plot(digraph(newA));
-%    highlight(h, find(S==1), 'NodeColor', stratColors(1,:)); %random
-%    highlight(h, find(S==2), 'NodeColor', stratColors(2,:)); %greedy
-%    highlight(h, find(S==3), 'NodeColor', stratColors(3,:)); %altruist
-%    highlight(h, find(S==4), 'NodeColor', stratColors(4,:)); %cooperative
-%    highlight(h, find(S==5), 'NodeColor', stratColors(5,:)); %fair
-%    title('Network');
-    
-% top right plot
-%    subplot(2,2,2);
-%    [counts,centers] = hist(newS, 1:nrStrategies);
-%    bar(centers, counts);
-%    xlim([1,nrStrategies]);
-%    title('Current strategy distribution');
-    
-% bottom left plot
-%    subplot(2,2,3);
-    % change color order to correspond to strategies
-%    set(gca, 'ColorOrder', stratColors, 'NextPlot', 'replacechildren');
-%    sOverTime(i,:) = counts; % current iteration's strategy distribution
-%    plot(sOverTime(1:i,:));
-plot(statistics.time, statistics.strategyDist);
-xlim([0 statistics.time(end)]);
+figure(1);
+hold on;
+figure(2);
+hold on;
+
+for run = 1:10
+    [newS, newA, newpL, newU, statistics]...
+        = evolveGame(S, A, pL, U, duration, strategy, imitationEpoch, imitationStrength, mistakeRate);
+    for s = 1:length(strategy)
+        figure(1);
+        plot(statistics.time, statistics.strategyDist(:,s), 'color', stratColors(s,:));
+        figure(2);
+        plot(statistics.time, statistics.meanutil(:,s), 'color', stratColors(s,:));
+    end
+end
+
+figure(1);
+xlim([0 duration]);
 xlabel('Time');
 ylabel('Proportion');
 title('Strategy distribution');
     
-% bottom right plot
-%subplot(2,2,4);
-% reset color order to Matlab default
-figure;
-set(gca, 'ColorOrder', stratColors, 'NextPlot', 'replacechildren');
-%    uOverTime(i) = mean(newU); % avg utility
-%    plot(uOverTime(1:i,:));
-plot(statistics.time, statistics.meanutil);
-xlim([0 statistics.time(end)]);
+figure(2);
+xlim([0 duration]);
 xlabel('Time');
 ylabel('Utility');
 title('Mean utility');
