@@ -23,6 +23,9 @@ handle = @strategyFollowMax;
             end
         end
         
+        if A(agent, connection) == 1
+                connection = agent;
+        end
         
         newA = [];
         newpL = [];
