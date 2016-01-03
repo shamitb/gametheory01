@@ -24,7 +24,7 @@ handle = @strategyFollowMax;
         end
         
         if A(agent, connection) == 1
-                connection = agent;
+            connection = agent;
         end
         
         newA = [];
