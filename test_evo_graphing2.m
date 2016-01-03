@@ -35,7 +35,7 @@ stratColors = [
     0.5, 0,   0.5; %cooperative
     0,   0,   1;]; %fair
 
-origColorOrder = get(gca,'ColorOrder');
+% origColorOrder = get(gca,'ColorOrder');
 %%
 %[newA, newpL, newU, statistics]...
 %    = iterateGame(S, A, pL, U, duration, strategy, mistakeRate, fullStats);
@@ -85,6 +85,7 @@ set(gca, 'ColorOrder', stratColors, 'NextPlot', 'replacechildren');
 %    sOverTime(i,:) = counts; % current iteration's strategy distribution
 %    plot(sOverTime(1:i,:));
 plot(statistics.time, statistics.strategyDist);
+xlim([0 statistics.time(end)]);
 xlabel('Time');
 ylabel('Proportion');
 title('Strategy distribution');
@@ -97,7 +98,8 @@ set(gca, 'ColorOrder', stratColors, 'NextPlot', 'replacechildren');
 %    uOverTime(i) = mean(newU); % avg utility
 %    plot(uOverTime(1:i,:));
 plot(statistics.time, statistics.meanutil);
-xlabel('Iteration');
+xlim([0 statistics.time(end)]);
+xlabel('Time');
 ylabel('Utility');
 title('Mean utility');
     
