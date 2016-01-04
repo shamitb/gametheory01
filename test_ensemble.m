@@ -31,9 +31,11 @@ strategy{9} = generateStrategyThreshold(strategy{4}, strategy{3}, 0.5);
 strategyName{9} = 'Scratch my back';
 strategy{10} = generateStrategyThreshold(strategy{3}, strategy{4}, 0.5);
 strategyName{10} = 'Scratch your back';
+strategy{11} = generateStrategyFollowMax(b, c);
+strategyName{11} = 'Follow Max';
 
 % populate with indices to use
-stratInGame = [2 3];
+stratInGame = [2 11];
 
 % fill evenly from startStrategies
 S = stratInGame(mod(1:N, length(stratInGame)) + 1);
@@ -57,6 +59,7 @@ stratColors = [
     0.4,  0,    1;    % coop anti
     0,    0.4,  1;    % my back
     0,    1,    0.4;  % your back
+    0.5,  0.5,  0.5;  % follow max
     ];
 
 maxRuns = 100;
