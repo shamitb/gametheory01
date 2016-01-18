@@ -1,4 +1,3 @@
-
 function handle = generateStrategyFollowMax(beta, cost)
 
 handle = @strategyFollowMax;
@@ -35,3 +34,4 @@ handle = @strategyFollowMax;
     end
 
 end
+

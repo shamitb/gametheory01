@@ -2,49 +2,43 @@ function handle = generateStrategyGreedy(beta, cost)
 
     handle = @strategyGreedy;
 
-    function [connection, newA, newpL, newU] = strategyGreedy(agent, A, pL, U)
+    function [connection, newpL, newU] = strategyGreedy(agent, A, pL, U)
         % Always make best move for self
         
         % Current connections
-        kill = find(A(agent, :));
+        connected = A(agent, :) > 0;
+        
+        % Change in utility, start with cost of following
+        deltaU = cost * connected - cost * ~connected;
         
         % Self value through other node
         loop = pL(:, agent)' + 1;
-        loop(agent) = 1;
-        gain = beta .^ loop;
-        gain(loop == 1) = 0;
-        
-        switch numel(kill)            
-            case 0
-                % No connections, is there a good connection?
-                best = max(gain);
-                if best > cost
-                    bestIndex = find(gain==best);
-                    connection = bestIndex(randi(numel(bestIndex)));
-                else
-                    connection = agent;
+
+        if isfinite(pL(agent, agent))
+            % Critical nodes are equal to current loop
+            critical = (loop == pL(agent, agent)) & connected;
+
+            % If tightest loop is unique, subtract from utility
+            if nnz(critical) == 1
+                deltaU(critical) = deltaU(critical) - beta .^ pL(agent, agent);
+                % If next tightest exists, add to utility
+                if any(~critical & connected)
+                    nextbest = max(beta .^ loop(~critical & connected));
+                    deltaU(critical) = deltaU(critical) + nextbest;
                 end
-            case 1
-                % One connection, is it good?
-                if gain(kill) < cost
-                    connection = kill;
-                else
-                    connection = agent;
-                end
-            otherwise
-                % Several connections, don't kill a unique best loop
-                critical = loop == pL(agent, agent);
-                if sum(critical) == 1
-                    if gain(critical) == max(gain(kill))
-                        kill(kill==find(critical)) = [];
-                    else
-                        kill = find(critical);
-                    end
-                end
-                connection = kill(randi(numel(kill)));
+            end
         end
         
-        newA = [];
+        % Shorter available loops
+        shorter = loop < pL(agent, agent) & ~connected;
+        deltaU(shorter) = deltaU(shorter) - beta .^ pL(agent, agent)...
+            + beta .^ loop(shorter);
+        
+        deltaU(agent) = 0;
+        
+        [~, connection] = max(deltaU);
+        connection = connection(randi(numel(connection)));
+        
         newpL = [];
         newU = [];
 

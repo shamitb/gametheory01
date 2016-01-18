@@ -1,13 +1,8 @@
-N = 256;
+N = 200;
 A = initialAction(N);
 mistakeRate = 0.5 / N;
 b = 1;
-c = 0.5;
-
-for node = 1:N-1
-    A(node, node + 1) = 1;
-end
-A(N, 1) = 1;
+c = 0.55;
 
 [U, pL] = utility(A, [], b, c);
 
@@ -22,12 +17,16 @@ strategy{4} = generateStrategyCooperative(b, c);
 % split strategies
 strategy{5} = generateStrategyThreshold(strategy{2}, strategy{3}, 0.25);
 
-%S = sort(randi(3, N, 1) + 1);
-S = ones(N, 1) * 2;
+S = randi(2, N, 1)+1;
+%S = ones(N, 1) * 2;
 
-duration = N * 200;
-
+duration = N * 2000;
+imitationEpoch = N;
+imitationStrength = 1.05;
 fullStats = true;
 
-[newA, newpL, newU, statistics]...
-    = iterateGame(S, A, pL, U, duration, strategy, mistakeRate, fullStats);
+%[newA, newpL, newU, statistics]...
+%    = iterateGame(S, A, pL, U, duration, strategy, mistakeRate, fullStats);
+
+[newS, newA, newpL, newU, statistics]...
+    = evolveGame(S, A, pL, U, duration, strategy, imitationEpoch, imitationStrength, mistakeRate);

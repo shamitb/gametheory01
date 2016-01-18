@@ -1,161 +1,257 @@
-function [S, A, U, SHistory, AHistory]...
-    = iterateGame(S, A, pL, U, actionCount, imitationEpoch, strategy, mistakeRate)
-% [S, A, U, SHistory, AHistory] = iterateGame(S, A, pL, U,
-% actionCount, imitationEpoch)
-% 
-% S - Nx1 vector of agent strategies (required!)
-% A - NxN initial adjacency matrix (default zeros)
-% pL - precomputed NxN path length matrix (default recompute)
-% U - precomputed Nx1 vector of utilities (default recompute)
-% actionCount - number of actions to take (default = N)
-% imitationEpoch - average time between imitations or false (default = N)
-%
-% SHistory - struct list of strategy changes, (agent, strategy, time)
-% AHistory - struct list of actions (agent, connection, utility, time)
+function [A, pL, U, statistics]...
+    = iterateGame(S, A, pL, U, duration, strategy, mistakeRate, fullStats)
 
-    if ~exist('S','var') || isempty(S) || ~exist('strategy', 'var') || isempty(strategy)
+% [A, pL, U, statistics] = 
+%     iterateGame(S, A, pL, U, actionCount, imitationEpoch)
+% 
+% S           - Nx1 vector of agent strategies (required!)
+% A           - NxN initial adjacency matrix (default zeros)
+% pL          - precomputed NxN path length matrix (default recompute)
+% U           - precomputed Nx1 vector of utilities (default recompute)
+% duration    - time to proceed
+% strategy    - cell array of strategy functions, strategy{1} for mistakes
+% mistakeRate - probability of random action (default 0)
+% fullStats   - flag for return of full statistics
+%
+% statistics - table of events
+
+    if ~exist('S','var') ||...
+       isempty(S) ||...
+       ~exist('strategy', 'var') ||...
+       isempty(strategy)
     %% if no strategies given return empty results
 
-        S = [];
         A = [];
+        pL = [];
         U = [];
-        SHistory = struct('agent', {}, 'strategy', {}, 'time', {});            
-        AHistory = struct('agent', {}, 'connection', {}, 'time', {});
+        statistics = [];
 
     else
     %% validate inputs
+    
+        M = length(strategy); % number of strategies
         N = length(S);
         
         % validate A, default = zeros(N)
-        if ~exist('A', 'var') || isempty(A) || any(size(A)~=[N N])
+        if ~exist('A', 'var') ||...
+           isempty(A) ||...
+           any(size(A)~=[N N])
+       
             A = sparse(N, N);
             pL = zeros(N);
             U = zeros(N, 1);
         end
 
-        % validate LP, default = leastPath(A)
-        if ~exist('LP', 'var') || isempty(pL) || any(size(pL)~=[N N])
+        % validate pL, default = leastPath(A)
+        if ~exist('pL', 'var') ||...
+           isempty(pL) ||...
+           any(size(pL)~=[N N])
+       
             pL = pathLength(A);
         end
         
         % validate U, default = utility(A)
-        if ~exist('U', 'var') || isempty(U) || any(size(U)~=[N 1])
+        if ~exist('U', 'var') ||...
+           isempty(U) ||...
+           any(size(U)~=[N 1])
+       
             U = utility(A, pL);
         end
         
-        % validate actionCount, default = N
-        if ~exist('actionCount', 'var') || ~isreal(actionCount)
-            actionCount = N;
+        % validate duration, default = N
+        if ~exist('duration', 'var') ||...
+           ~isreal(duration) ||...
+           duration < 0
+       
+            duration = N;
         end
         
-        % validate imitationEpoch, default = N
-        if ~exist('imitationEpoch', 'var') || ~isreal(imitationEpoch)
-            imitationEpoch = N;
-        end
-        
+        % preallocation for events
+        imax = ceil(duration);
+                
         % validate mistakeRate, default = 0
-        if ~exist('mistakeRate', 'var') || ~isreal(mistakeRate)
+        if ~exist('mistakeRate', 'var') ||...
+           ~isreal(mistakeRate) ||...
+           mistakeRate > 1
+
             mistakeRate = 0;
         end
         
     %% initialize variables
         
-        actionIndex = 0;
-        imitationIndex = 0;
+        i = 1;
+        [from, to] = find(A);
+        assortM = accumarray([S(from) S(to)], 1, [M M]);
         
-        if imitationEpoch
-            % preallocate strategy history
-            SHistory(ceil(actionCount / imitationEpoch) + 10) = struct(...
-                'agent', [], 'strategy', [], 'time', []);
-        else
-            % empty strategy history
-            imitationEpoch = inf;
-            SHistory = struct('agent', {}, 'strategy', {}, 'time', {});            
+        agent = zeros(imax, 1);
+        direction = zeros(imax, 1);     % 1 make, -1 break, 0 else
+        mistake = false(imax, 1);
+        target = zeros(imax, 1);
+        time = zeros(imax, 1);
+        util = zeros(imax, N);
+        
+        unhappy = true(N, 1);           % mask to avoid repeat evaluations
+
+        if fullStats
+            inmax = max(sum(A)) + 5;
+            outmax = max(sum(A,2)) + 5;
+            
+            indegree = zeros(imax, inmax);
+            outdegree = zeros(imax, outmax);
+            
+            inin = zeros(imax, 1);
+            inout = zeros(imax, 1);
+            outin = zeros(imax, 1);
+            outout = zeros(imax, 1);
+            mixing = zeros(imax, 1);
         end
-        
-        % preallocate action history
-        AHistory(actionCount) =...
-            struct('agent', [], 'connection', [], 'utility', [], 'time', []);
-        
+         
         % start poisson process
-        t = 0;
         untilAction = -log(rand);
-        untilImitate = -log(rand) * imitationEpoch;
+        t = untilAction;
         
     %% main loop        
-        while actionCount > actionIndex
-            
-            % select random agent
-            agent = randi(N);
-            
-            if untilAction < untilImitate
-        %% action
-                % advance time
-                untilImitate = untilImitate - untilAction;
-                t = t + untilAction;
-                untilAction = -log(rand);
-                actionIndex = actionIndex + 1;
+        while duration > t;
+
+            % allocate more space
+            if i > imax
+                imax = imax + ceil(duration - t) + 5;
+                agent(imax, 1) = 0;
+                direction(imax, 1) = 0;     % 1 make, -1 break, 0 else
+                mistake(imax, 1) = 0;
+                target(imax, 1) = 0;
+                time(imax, 1) = 0;
+                util(imax, N) = 0;
                 
-                % Apply agent's strategy
-                if mistakeRate==0 || mistakeRate < rand
-                    [connection, newA, newpL, newU] = strategy{S(agent)}(agent, A, pL, U);
-                else
-                    [connection, newA, newpL, newU] = strategy{1}(agent, A, pL, U);
+                if fullStats
+                    indegree(imax, 1) = 0;
+                    outdegree(imax, 1) = 0;
+                    inin(imax, 1) = 0;
+                    inout(imax, 1) = 0;
+                    outin(imax, 1) = 0;
+                    outout(imax, 1) = 0;
+                    mixing(imax, 1) = 0;
                 end
-                
-                if connection ~= agent
-                    
-                    % Update A
-                    A(agent, connection) = 1 - A(agent, connection);
-                    
-                    % Compute pL if needed
-                    if isempty(newpL)
-                        pL = pathLength(A);
-                    else
-                        pL = newpL;
-                    end
-                    
-                    % Compute U if needed
-                    if isempty(newU)
-                        U = utility(A, pL);
-                    else
-                        U = newU;
-                    end
-                    
-                    % Record utility in history
-                    AHistory(actionIndex).utility = U;
-                    
-                end
-                
-                % Record action in history
-                AHistory(actionIndex).agent = agent;
-                AHistory(actionIndex).connection = connection;
-                AHistory(actionIndex).time = t;
-                
-            % imitate?
+            end
+            
+            agent(i) = randi(N);
+                            
+            % Apply agent's strategy
+            if mistakeRate > rand
+                [target(i), newpL, newU] = strategy{1}(agent(i), A, pL, U);
+                mistake(i) = true;
+            elseif unhappy(agent(i))
+                [target(i), newpL, newU] = strategy{S(agent(i))}(agent(i), A, pL, U);
             else
-        %% imitation
+                target(i) = agent(i);
+            end
+            
+            unhappy(agent(i)) = false;
                 
-                % advance time
-                untilAction = untilAction - untilImitate;
-                t = t + untilImitate;
-                untilImitate = -log(rand) * imitationEpoch;
-                imitationIndex = imitationIndex + 1;
+            if agent(i)~=target(i)
+                unhappy(:) = true;
                 
-                % utility-weighted selection of new strategy
-                w = cumsum(U) - min(U);
-                rolemodel = sum(w < rand * w(end)) + 1;
-                S(agent) = S(rolemodel);
-                SHistory(imitationIndex).agent = agent;
-                SHistory(imitationIndex).strategy = S(agent);
-                SHistory(imitationIndex).time = t;
+                if A(agent(i), target(i))
+                    direction(i) = -1;
+                else
+                    direction(i) = 1;
+                end
+                    
+                A(agent(i), target(i)) =...
+                    A(agent(i), target(i)) + direction(i);
                 
-            end % act or imitate
+                if fullStats
+                    assortM(S(agent(i)), S(target(i))) =...
+                        assortM(S(agent(i)), S(target(i))) + direction(i);
+                end
+                    
+                if isempty(newpL)
+                    pL = pathLength(A);
+                else
+                    pL = newpL;
+                end
+                    
+                if isempty(newU)
+                    U = utility(A, pL);
+                else
+                    U = newU;
+                end
+                
+                time(i) = t;
+                util(i, :) = U;
+                
+                if fullStats
+                
+                    mixing(i) = mixingAssortativity(assortM);
+                    [inin(i), inout(i), outin(i), outout(i), inD, outD] =...
+                        degreeAssortativity(A);
+                
+                    ink = length(inD);
+                    outk = length(outD);
+                
+                    if ink > inmax
+                        inmax = ink + 1;
+                        indegree(imax, inmax) = 0;
+                    end
+                    indegree(i, 1:ink) = inD;
+                
+                    if outk > outmax
+                        outmax = outmax + 1;
+                        outdegree(imax, outmax) = 0;
+                    end
+                    outdegree(i, 1:outk) = outD;
+                
+                end
+
+                i = i + 1;    
+            end
+            
                         
+            % advance time
+            untilAction = -log(rand);
+            t = t + untilAction;
+            
         end % while loop
+        
+        if i > 1
+            trim = i:imax;
+        
+            agent(trim) = [];
+            direction(trim) = [];
+            mistake(trim) = [];
+            target(trim) = [];
+            time(trim) = [];
+            util(trim, :) = [];
+ 
+            statistics = table(agent,...
+                               direction,...
+                               mistake,...
+                               target,...
+                               time,...
+                               util);
 
-        SHistory=SHistory(1:imitationIndex);
-
+            if fullStats
+            
+                indegree(trim,:) = [];
+                outdegree(trim,:) = [];
+                inin(trim) = [];
+                inout(trim) = [];
+                outin(trim) = [];
+                outout(trim) = [];
+                mixing(trim) = [];
+            
+                details = table(indegree,...
+                                outdegree,...
+                                inin,...
+                                inout,...
+                                outin,...
+                                outout,...
+                                mixing);
+                statistics = [statistics details];
+            end
+        else
+            statistics = [];
+        end
     end % if valid strategy
 end
 
